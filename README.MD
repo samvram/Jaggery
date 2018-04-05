@@ -63,31 +63,9 @@ On Windows machine, just double click **run_windows.bat**
 On starting *Jaggery* you will come across a CLI(Command Line Interface),
 which is pretty simplified, the first thing you will be asked is:
 
-`Enter the Server IP : `
+* An alias name if you are signing in for the first time
+* Your patience and co-operation :p
 
-Enter the IP address of the centralized server provided to you,
-Just press enter if you are the server.
-
-Now, if you have registered before, you will be greeted with your previous
-Unique ID, however if you are using first time, you will be asked to enter an
-alias name, its like a pet name or something.
-
-Past that, you will encounter
-
-`$$ Type your current IP you want reception on: `
-
-Provide your IP, not your local address *127.0.0.1* If you are on Linux
-run `ifconfig`, or if you are in windows type `ipconfig all` to find your IP address.
-
-Now, you will be asked,
-
-`$$ What port you wanna receive on: `
-
-Enter a port, preferrably **other than 5000**, like **5025** to end setup.
-
-Upon successful setup, you will see something like,
-
-`$$ IP bound successfully`
 
 ## Using Jaggery
 
