@@ -1,18 +1,12 @@
 import json
 import ntpath
 import threading
+import os
 from socket import *
 from tkinter import *
 from tkinter import filedialog
 from uuid import getnode as get_mac
 
-# import pip
-# import importlib
-# try:
-#     importlib.import_module('FORE', 'colorama')
-# except ImportError:
-#     print("Package colorama not found, installing\n")
-#     pip.main(['install', 'colorama'])
 try:
     from colorama import init, Fore, Style
 except:
@@ -158,15 +152,12 @@ class GenericClient:
                     permission = input('$$ %s has requested %s from you. Y/N : ' % (address, file_path))
                     if permission in ['Y', 'y']:
                         root = Tk()
-                        try:
-                            root.filename = filedialog.askopenfilename(initialdir=os.path.expanduser('~/Documents'),
-                                                                   title='Select file')
-                            file_path = root.filename
-                        except:
-                            print('You didn not select any file, exiting command')
-                            root.destroy()
-
+                        root.filename = filedialog.askopenfilename(initialdir=os.path.expanduser('~/Documents'),
+                                                               title='Select file')
+                        file_path = root.filename
                         root.destroy()
+                        print('You didnt not select any file, exiting command')
+
                         head, tail = ntpath.split(file_path)
                         self.getf_lock = False
                         if os.path.isfile(file_path):
@@ -240,16 +231,10 @@ class GenericClient:
             received_file_name = reply[2]
             print('Receiving FILE of Size ' + str(file_size) + '\n')
             root1 = Tk()
-            try:
-                root1.filename = filedialog.asksaveasfilename(initialdir=os.path.expanduser('~/Documents/'),
-                                                          title='Save file as ' + received_file_name)
-
-                file_path = root1.filename
-                root1.destroy()
-            except:
-                print("No file name given, exiting")
-                sock.close()
-                return
+            root1.filename = filedialog.asksaveasfilename(initialdir=os.path.expanduser('~/Documents/'),
+                                                      title='Save file as ' + received_file_name)
+            file_path = root1.filename
+            root1.destroy()
             try:
                 with open(file_path, 'wb') as f:
                     data = sock.recv(self.BUFFERSIZE)
@@ -263,8 +248,12 @@ class GenericClient:
                     print("Download Complete\n")
                     sock.send('done'.encode())
                 f.close()
-            except:
+            except FileNotFoundError:
                 print("No file name given, exiting")
+                sock.close()
+                return
+            except ConnectionResetError:
+                print("Connection has been closed in between")
                 sock.close()
                 return
         elif reply[0] == '308':
