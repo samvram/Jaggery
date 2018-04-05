@@ -1,6 +1,5 @@
 import json
 import ntpath
-import os
 import threading
 from socket import *
 from tkinter import *
@@ -14,9 +13,14 @@ from uuid import getnode as get_mac
 # except ImportError:
 #     print("Package colorama not found, installing\n")
 #     pip.main(['install', 'colorama'])
-from colorama import init, Fore, Style
+try:
+    from colorama import init, Fore, Style
+except:
+    import pip
+    pip.main(['install', 'colorama'])
+    from colorama import init, Fore, Style
 
-init(convert=True)
+
 
 
 class GenericClient:
@@ -31,6 +35,7 @@ class GenericClient:
         creation and sets it efficiently as a class property
         :param alias: the alias name by which you are recognized online on the server
         """
+        init(convert=True)
         s = socket(AF_INET, SOCK_DGRAM)
         s.connect(("8.8.8.8", 80))
         self.client_ip = s.getsockname()[0]
@@ -144,7 +149,7 @@ class GenericClient:
                 # print("$$ Timed out. Trying again")
                 continue
             else:
-                print(Fore.WHITE + '$$ A connection has been successfully established to yur node from ' + str(
+                print(Fore.WHITE + '$$ A connection has been successfully established to your node from ' + str(
                     address) + '\n')
                 request = (connection.recv(self.BUFFERSIZE)).decode()
                 if request.split(':')[0] == 'fetch':
@@ -156,9 +161,11 @@ class GenericClient:
                         try:
                             root.filename = filedialog.askopenfilename(initialdir=os.path.expanduser('~/Documents'),
                                                                    title='Select file')
+                            file_path = root.filename
                         except:
                             print('You didn not select any file, exiting command')
-                        file_path = root.filename
+                            root.destroy()
+
                         root.destroy()
                         head, tail = ntpath.split(file_path)
                         self.getf_lock = False
@@ -183,7 +190,10 @@ class GenericClient:
                                         self.getf_lock = False
                                         break
                                 # connection.settimeout(100)
-                                connection.recv(self.BUFFERSIZE).decode()
+                                try:
+                                    connection.recv(self.BUFFERSIZE).decode()
+                                except:
+                                    print('Connection was forcfully closed from other end\n$$', end=' ')
                                 if is_sent_success:
                                     print('File Successfully sent\n$$ ')
                             f.close()
@@ -196,7 +206,7 @@ class GenericClient:
                     connection.send('309'.encode())
                 self.getf_lock = False
             connection.close()
-            print("Connection Stopped\n$$")
+            print("Connection Stopped\n$$", end=' ')
         sock.close()
         print("Stopped Listening")
 
@@ -233,23 +243,30 @@ class GenericClient:
             try:
                 root1.filename = filedialog.asksaveasfilename(initialdir=os.path.expanduser('~/Documents/'),
                                                           title='Save file as ' + received_file_name)
+
+                file_path = root1.filename
+                root1.destroy()
             except:
                 print("No file name given, exiting")
                 sock.close()
-            file_path = root1.filename
-            root1.destroy()
-            with open(file_path, 'wb') as f:
-                data = sock.recv(self.BUFFERSIZE)
-                total_received = len(data)
-                f.write(data)
-                while total_received < file_size:
+                return
+            try:
+                with open(file_path, 'wb') as f:
                     data = sock.recv(self.BUFFERSIZE)
-                    total_received += len(data)
+                    total_received = len(data)
                     f.write(data)
-                    print("{0:.2f}".format((total_received / float(file_size)) * 100) + " % downloaded", end='\r')
-                print("Download Complete\n")
-                sock.send('done'.encode())
-            f.close()
+                    while total_received < file_size:
+                        data = sock.recv(self.BUFFERSIZE)
+                        total_received += len(data)
+                        f.write(data)
+                        print("{0:.2f}".format((total_received / float(file_size)) * 100) + " % downloaded", end='\r')
+                    print("Download Complete\n")
+                    sock.send('done'.encode())
+                f.close()
+            except:
+                print("No file name given, exiting")
+                sock.close()
+                return
         elif reply[0] == '308':
             print('$$ Permission Denied\n')
         elif reply[0] == '307':
