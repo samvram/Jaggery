@@ -157,7 +157,7 @@ class GenericClient:
                             root.filename = filedialog.askopenfilename(initialdir=os.path.expanduser('~/Documents'),
                                                                    title='Select file')
                         except:
-                            connection.send('310'.encode())
+                            print('You didn not select any file, exiting command')
                         file_path = root.filename
                         root.destroy()
                         head, tail = ntpath.split(file_path)
@@ -250,12 +250,10 @@ class GenericClient:
                 print("Download Complete\n")
                 sock.send('done'.encode())
             f.close()
-        elif reply == '308':
+        elif reply[0] == '308':
             print('$$ Permission Denied\n')
-        elif reply == '307':
+        elif reply[0] == '307':
             print('$$ File Not Found\n')
-        elif reply == '310':
-            print('$$ User did not select any file.\n')
         else:
             print('$$ Unknown Response from Client\n')
         # Free the socket, i.e. disconnect it So it can be reused
