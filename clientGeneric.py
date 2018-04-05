@@ -153,8 +153,11 @@ class GenericClient:
                     permission = input('$$ %s has requested %s from you. Y/N : ' % (address, file_path))
                     if permission in ['Y', 'y']:
                         root = Tk()
-                        root.filename = filedialog.askopenfilename(initialdir=os.path.expanduser('~/Documents'),
+                        try:
+                            root.filename = filedialog.askopenfilename(initialdir=os.path.expanduser('~/Documents'),
                                                                    title='Select file')
+                        except:
+                            connection.send('310'.encode())
                         file_path = root.filename
                         root.destroy()
                         head, tail = ntpath.split(file_path)
@@ -227,8 +230,12 @@ class GenericClient:
             received_file_name = reply[2]
             print('Receiving FILE of Size ' + str(file_size) + '\n')
             root1 = Tk()
-            root1.filename = filedialog.asksaveasfilename(initialdir=os.path.expanduser('~/Documents/'),
+            try:
+                root1.filename = filedialog.asksaveasfilename(initialdir=os.path.expanduser('~/Documents/'),
                                                           title='Save file as ' + received_file_name)
+            except:
+                print("No file name given, exiting")
+                sock.close()
             file_path = root1.filename
             root1.destroy()
             with open(file_path, 'wb') as f:
@@ -247,6 +254,8 @@ class GenericClient:
             print('$$ Permission Denied\n')
         elif reply == '307':
             print('$$ File Not Found\n')
+        elif reply == '310':
+            print('$$ User did not select any file.\n')
         else:
             print('$$ Unknown Response from Client\n')
         # Free the socket, i.e. disconnect it So it can be reused
