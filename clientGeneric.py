@@ -227,8 +227,8 @@ class GenericClient:
             return 0
         print('$$ Connected\n')
         sock.send(('fetch:%s' % file_name).encode())
-        print('$$ Requesting file\n')
-        sock.settimeout(100)
+        print('$$ Requesting file. Timeout 60 sec\n')
+        sock.settimeout(60)
         try:
             reply = (sock.recv(self.BUFFERSIZE)).decode()
         except:
