@@ -146,20 +146,26 @@ class GenericClient:
                 print(Fore.WHITE + '$$ A connection has been successfully established to your node from ' + str(
                     address) + '\n')
                 request = (connection.recv(self.BUFFERSIZE)).decode()
+
                 if request.split(':')[0] == 'fetch':
                     file_path = request.split(':')[1]
                     self.getf_lock = True
-                    permission = input('$$ %s has requested %s from you. Y/N : ' % (address, file_path))
-                    if permission in ['Y', 'y']:
-                        root = Tk()
-                        root.filename = filedialog.askopenfilename(initialdir=os.path.expanduser('~/Documents'),
-                                                               title='Select file')
-                        file_path = root.filename
-                        root.destroy()
-                        print('You didnt not select any file, exiting command')
+                    root = Tk()
+                    root.filename = filedialog.askopenfilename(initialdir=os.path.expanduser('~/Documents'),
+                                                           title='Request for %s'%file_path)
+                    file_path = root.filename
+                    root.destroy()
+                    # print('file_path'+str(file_path))
 
+                    # if file_path == ():
+                    #     print('You didnt not select any file, exiting command')
+                    #     connection.send('309'.encode())
+
+
+
+                    self.getf_lock = False
+                    if file_path != ():
                         head, tail = ntpath.split(file_path)
-                        self.getf_lock = False
                         if os.path.isfile(file_path):
                             connection.send(('yes:' + str(os.path.getsize(file_path)) + ':' + tail).encode())
                             file_size = os.path.getsize(file_path)
@@ -448,7 +454,7 @@ class GenericClient:
 
         print("Threads joined")
         self.aftermath()
-        input("Press any key to exit")
+        input("Press Enter to exit")
 
     def print_h(self, cmd, work):
         print(cmd.rjust(30)+' - '+ work +'\n')
