@@ -2,6 +2,9 @@ import json
 import ntpath
 import threading
 import os
+import readline
+import rlcompleter
+import atexit
 from socket import *
 from tkinter import *
 from tkinter import filedialog
@@ -15,7 +18,24 @@ except:
     from colorama import init, Fore, Style
 
 
+class MyCompleter(object):  # custom autocompleter
+    def __init__(self,options):
+        self.options = sorted(options)
 
+    def complete(self,text,state):
+        if state == 0: # on first trigger, build possible matches
+            if text:  # cache matches (entries that start with entered text)
+                self.matches = [ s for s in self.options
+                                     if text in s] # partial completion added
+            else: # no text entered -> all matches possible
+                self.matches = self.options[:]
+
+        # return match indexed by state
+        try:
+            return self.matches[state]
+        except IndexError:
+            return None
+    
 
 class GenericClient:
     """
@@ -276,6 +296,17 @@ class GenericClient:
         The function which runs the console on the client machine
         :return:
         """
+        completer = MyCompleter(["isonline", "isonline -all","isonline -a", "isonline -ip","getf","alias","exit"])
+        # tab completion
+        readline.set_completer(completer.complete)
+        readline.parse_and_bind('tab: complete')
+        # history file
+        histfile = os.path.join(os.environ['HOME'], '.pythonhistory')
+        try:
+                readline.read_history_file(histfile)
+        except IOError:
+                pass
+        # above changes are important :)
         while True:
             if self.getf_lock is True:
                 continue
@@ -412,7 +443,10 @@ class GenericClient:
         print("           Bugs - +919497300461 - Samvram Sahu              \n")
         print("           Bugs - +919497300089 - Ankit Verma               \n")
         print("************************************************************\n")
-
+        #atexit.register(readline.write_history_file, histfile) # its time to delete 
+        #del os, histfile, readfile, rtlcompleter # separate hist for each run
+        
+        
     def run_time(self):
         """
         A function depicting the runtime of the Client as a whole
