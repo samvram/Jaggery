@@ -2,6 +2,9 @@ import json
 import ntpath
 import threading
 import os
+import readline
+import rlcompleter
+import atexit
 from socket import *
 from tkinter import *
 from tkinter import filedialog
@@ -276,6 +279,15 @@ class GenericClient:
         The function which runs the console on the client machine
         :return:
         """
+        # tab completion
+        readline.parse_and_bind('tab: complete')
+        # history file
+        histfile = os.path.join(os.environ['HOME'], '.pythonhistory')
+        try:
+                readline.read_history_file(histfile)
+        except IOError:
+                pass
+        # above changes are important :)
         while True:
             if self.getf_lock is True:
                 continue
@@ -412,7 +424,10 @@ class GenericClient:
         print("           Bugs - +919497300461 - Samvram Sahu              \n")
         print("           Bugs - +919497300089 - Ankit Verma               \n")
         print("************************************************************\n")
-
+        atexit.register(readline.write_history_file, histfile) # its time to delete 
+        del os, histfile, readfile, rtlcompleter # separate hist for each run
+        
+        
     def run_time(self):
         """
         A function depicting the runtime of the Client as a whole
