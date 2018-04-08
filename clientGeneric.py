@@ -290,7 +290,7 @@ class GenericClient:
                         total_received += len(data)
                         f.write(data)
                         print("{0:.2f}".format((total_received / float(file_size)) * 100) + " % downloaded", end='\r')
-                    print("Download Complete\n")
+                    print("Download Completed\n")
                     sock.send('done'.encode())
                 f.close()
             except FileNotFoundError:
@@ -418,7 +418,7 @@ class GenericClient:
                     print(k + "\tDoes not exist. Exiting command")
                     return
                 if v[1] == 0:
-                    print(k + "is \tOFFLINE")
+                    print(k + " is \tOFFLINE")
                     return
                 ip_alias = v[0]
 
