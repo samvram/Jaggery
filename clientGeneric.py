@@ -2,7 +2,6 @@ import json
 import ntpath
 import threading
 import os
-import readline
 import rlcompleter
 import atexit
 from socket import *
@@ -16,8 +15,15 @@ except:
     import pip
     pip.main(['install', 'colorama'])
     from colorama import init, Fore, Style
+    
+try:
+    import readline  # pre-install on Linux python
+except ImportError:
+    import pip
+    pip.main(['install', 'pyreadline'])
+    import pyreadline # needed on mac/win python
 
-
+    
 class MyCompleter(object):  # custom autocompleter
     def __init__(self,options):
         self.options = sorted(options)
