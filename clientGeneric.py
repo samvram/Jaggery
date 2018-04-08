@@ -3,8 +3,8 @@ import ntpath
 import threading
 import os
 
-import rlcompleter
-import atexit
+# import rlcompleter
+# import atexit
 from socket import *
 from tkinter import *
 from tkinter import filedialog
@@ -17,11 +17,11 @@ except:
     pip.main(['install', 'colorama'])
     from colorama import init, Fore, Style
 
-try:
-    import readline
-except:
-    pip.main(['install', 'readline'])
-    import readline
+# try:
+#     import readline
+# except:
+#     pip.main(['install', 'readline'])
+#     import readline
 
 
 
@@ -174,7 +174,7 @@ class GenericClient:
                 received_json = self.server_query(main_server_socket, s)
                 received_dict = json.loads(received_json)
                 for k, v in received_dict.items():
-                    print(Fore.WHITE + '$$ A connection has been successfully established to your node from ' + k + '\n')
+                    print(Fore.WHITE + 'A connection has been requested to established to your node from "' + k + '"\n')
 
                 request = (connection.recv(self.BUFFERSIZE)).decode()
 
@@ -182,10 +182,13 @@ class GenericClient:
                     file_path = request.split(':')[1]
                     self.getf_lock = True
                     root = Tk()
-                    answer = messagebox.askyesno("Accept Connection", "Accept connection from "+k+" ?")
-                    if answer == 'no':
+                    answer = messagebox.askyesno("Accept Connection", "Accept connection from '"+k+"' ?")
+                    if not answer:
+                        self.getf_lock = False
+                        root.destroy()
                         connection.send('308'.encode())
                         connection.close()
+                        print("$$ ", end="")
                         continue
                     root.destroy()
 
@@ -199,9 +202,6 @@ class GenericClient:
                     # if file_path == ():
                     #     print('You didnt not select any file, exiting command')
                     #     connection.send('309'.encode())
-
-
-
                     self.getf_lock = False
                     if file_path != ():
                         head, tail = ntpath.split(file_path)
@@ -275,9 +275,12 @@ class GenericClient:
             file_size = int(reply[1])
             received_file_name = reply[2]
             print('Receiving FILE of Size ' + str(file_size) + '\n')
+            Ft = received_file_name.split('.')
+            lastFT= len(Ft)-1
+            # Ft[lastFT] = "*."+Ft[lastFT]
             root1 = Tk()
-            root1.filename = filedialog.asksaveasfilename(initialdir=os.path.expanduser('~/Documents/'),
-                                                      title='Save file as ' + received_file_name)
+            root1.filename = filedialog.asksaveasfilename(initialdir=os.path.expanduser('~/Documents/'),initialfile = received_file_name,
+                                                      title='Save file as ' ,filetypes = ((Ft[lastFT]+" files","*."+Ft[lastFT]),("all files","*.*")))
             file_path = root1.filename
             root1.destroy()
             try:
@@ -315,17 +318,17 @@ class GenericClient:
         The function which runs the console on the client machine
         :return:
         """
-        completer = MyCompleter(["isonline", "isonline -all","isonline -a", "isonline -ip","getf","alias","exit"])
-        # tab completion
-        readline.set_completer(completer.complete)
-        readline.parse_and_bind('tab: complete')
+        # completer = MyCompleter(["isonline", "isonline -all","isonline -a", "isonline -ip","getf","alias","exit"])
+        # # tab completion
+        # readline.set_completer(completer.complete)
+        # readline.parse_and_bind('tab: complete')
         # history file
-        histfile = os.path.join(os.environ['HOME'], '.pythonhistory')
-        try:
-                readline.read_history_file(histfile)
-        except IOError:
-                pass
-        # above changes are important :)
+        # histfile = os.path.join(os.environ['HOME'], '.pythonhistory')
+        # try:
+        #         readline.read_history_file(histfile)
+        # except IOError:
+        #         pass
+        # # above changes are important :)
         while True:
             if self.getf_lock is True:
                 continue
