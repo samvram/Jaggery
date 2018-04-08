@@ -2,20 +2,27 @@ import json
 import ntpath
 import threading
 import os
-import readline
+
 import rlcompleter
 import atexit
 from socket import *
 from tkinter import *
 from tkinter import filedialog
 from uuid import getnode as get_mac
-
+import pip
 try:
     from colorama import init, Fore, Style
 except:
-    import pip
+
     pip.main(['install', 'colorama'])
     from colorama import init, Fore, Style
+
+try:
+    import readline
+except:
+    pip.main(['install', 'readline'])
+    import readline
+
 
 
 class MyCompleter(object):  # custom autocompleter
@@ -147,7 +154,7 @@ class GenericClient:
         return received_json
 
 
-    def reception(self, sock):
+    def reception(self, main_server_socket, sock):
         """
         The function handling reception
         :param sock: The socket which communicates and looks for reception
@@ -163,13 +170,25 @@ class GenericClient:
                 # print("$$ Timed out. Trying again")
                 continue
             else:
-                print(Fore.WHITE + '$$ A connection has been successfully established to your node from ' + str(
-                    address) + '\n')
+                s = 'isonline -ip ' + str(address[0])
+                received_json = self.server_query(main_server_socket, s)
+                received_dict = json.loads(received_json)
+                for k, v in received_dict.items():
+                    print(Fore.WHITE + '$$ A connection has been successfully established to your node from ' + k + '\n')
+
                 request = (connection.recv(self.BUFFERSIZE)).decode()
 
                 if request.split(':')[0] == 'fetch':
                     file_path = request.split(':')[1]
                     self.getf_lock = True
+                    root = Tk()
+                    answer = messagebox.askyesno("Accept Connection", "Accept connection from "+k+" ?")
+                    if answer == 'no':
+                        connection.send('308'.encode())
+                        connection.close()
+                        continue
+                    root.destroy()
+
                     root = Tk()
                     root.filename = filedialog.askopenfilename(initialdir=os.path.expanduser('~/Documents'),
                                                            title='Request for %s'%file_path)
@@ -373,9 +392,11 @@ class GenericClient:
         received_json = self.server_query(main_server_socket, inp)
         rec = json.loads(received_json)
         if rec == "success":
-            print('The alias name is successfully changed.\n')
+            print(Fore.GREEN + 'The alias name is successfully set to %s\n' % self.alias, end='')
+            print(Fore.WHITE + '\n')
         else:
-            print("Alias name change was unsuccessful")
+            print(Fore.RED + 'The alias name is unsuccessful ', end='')
+            print(Fore.WHITE + '\n')
 
     def handleGETF(self, inp, main_server_socket):
         if len(inp.split(' ')) is 1:
@@ -476,7 +497,7 @@ class GenericClient:
 
         # Run a thread that looks for incoming connections and processes the commands that comes
         self.isrunning = True
-        receive_thread = threading.Thread(target=self.reception, args=(receive_socket,))
+        receive_thread = threading.Thread(target=self.reception, args=(main_server_socket, receive_socket,))
         receive_thread.start()
 
         # Running a Console on another thread
