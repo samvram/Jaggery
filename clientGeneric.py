@@ -3,46 +3,47 @@ import ntpath
 import threading
 import os
 
-# import rlcompleter
-# import atexit
+import rlcompleter
+import atexit
 from socket import *
 from tkinter import *
 from tkinter import filedialog
 from tkinter import messagebox
 from uuid import getnode as get_mac
 import pip
+
 try:
     from colorama import init, Fore, Style
 except:
     pip.main(['install', 'colorama'])
     from colorama import init, Fore, Style
 
-# try:
-#     import readline
-# except:
-#     pip.main(['install', 'readline'])
-#     import readline
-
+try:
+    import readline
+except:
+    pip.main(['install', 'pyreadline'])
+    import readline
 
 
 class MyCompleter(object):  # custom autocompleter
-    def __init__(self,options):
+    def __init__(self, options):
         self.options = sorted(options)
 
-    def complete(self,text,state):
-        if state == 0: # on first trigger, build possible matches
+    def complete(self, text, state):
+        if state == 0:  # on first trigger, build possible matches
             if text:  # cache matches (entries that start with entered text)
-                self.matches = [ s for s in self.options
-                                     if text in s] # partial completion added
-            else: # no text entered -> all matches possible
-                self.matches = self.options[:]
+                self.matches = [s for s in self.options
+                                if text in s]  # partial completion added
+            else:  # no text entered -> don't return anything
+                return None
+                # self.matches = self.options[:]
 
         # return match indexed by state
         try:
             return self.matches[state]
         except IndexError:
             return None
-    
+
 
 class GenericClient:
     """
@@ -153,7 +154,6 @@ class GenericClient:
         received_json = (sock.recv(self.BUFFERSIZE)).decode()
         return received_json
 
-
     def reception(self, main_server_socket, sock):
         """
         The function handling reception
@@ -182,7 +182,7 @@ class GenericClient:
                     file_path = request.split(':')[1]
                     self.getf_lock = True
                     root = Tk()
-                    answer = messagebox.askyesno("Accept Connection", "Accept connection from '"+k+"' ?")
+                    answer = messagebox.askyesno("Accept Connection", "Accept connection from '" + k + "' ?")
                     if not answer:
                         self.getf_lock = False
                         root.destroy()
@@ -194,7 +194,7 @@ class GenericClient:
 
                     root = Tk()
                     root.filename = filedialog.askopenfilename(initialdir=os.path.expanduser('~/Documents'),
-                                                           title='Request for %s'%file_path)
+                                                               title='Request for %s' % file_path)
                     file_path = root.filename
                     root.destroy()
                     # print('file_path'+str(file_path))
@@ -276,11 +276,12 @@ class GenericClient:
             received_file_name = reply[2]
             print('Receiving FILE of Size ' + str(file_size) + '\n')
             Ft = received_file_name.split('.')
-            lastFT= len(Ft)-1
-            # Ft[lastFT] = "*."+Ft[lastFT]
+            lastFT = len(Ft) - 1
             root1 = Tk()
-            root1.filename = filedialog.asksaveasfilename(initialdir=os.path.expanduser('~/Documents/'),initialfile = received_file_name,
-                                                      title='Save file as ' ,filetypes = ((Ft[lastFT]+" files","*."+Ft[lastFT]),("all files","*.*")))
+            root1.filename = filedialog.asksaveasfilename(initialdir=os.path.expanduser('~/Documents/'),
+                                                          initialfile=received_file_name,
+                                                          title='Save file as ', filetypes=(
+                (Ft[lastFT] + " files", "*." + Ft[lastFT]), ("all files", "*.*")))
             file_path = root1.filename
             root1.destroy()
             try:
@@ -318,17 +319,19 @@ class GenericClient:
         The function which runs the console on the client machine
         :return:
         """
-        # completer = MyCompleter(["isonline", "isonline -all","isonline -a", "isonline -ip","getf","alias","exit"])
-        # # tab completion
-        # readline.set_completer(completer.complete)
-        # readline.parse_and_bind('tab: complete')
-        # history file
-        # histfile = os.path.join(os.environ['HOME'], '.pythonhistory')
-        # try:
-        #         readline.read_history_file(histfile)
-        # except IOError:
-        #         pass
-        # # above changes are important :)
+        completer = MyCompleter(["isonline", "isonline -all", "isonline -a", "isonline -ip", "getf", "alias", "exit"])
+        # tab completion
+        readline.set_completer(completer.complete)
+        readline.parse_and_bind('tab: complete')
+
+        try:
+            # history file
+            histfile = os.path.join(os.environ['HOME'], '.pythonhistory')
+            readline.read_history_file(histfile)
+        except IOError:
+            print("$$ Can't read command histroy file")
+            # pass
+
         while True:
             if self.getf_lock is True:
                 continue
@@ -340,7 +343,7 @@ class GenericClient:
                 main_server_socket.close()
                 break
             elif inp.split(' ')[0].lower() == 'help':
-                self.help( )
+                self.help()
             elif inp.split(' ')[0] == 'isonline':
                 self.handleISONLINE(inp, main_server_socket)
             elif inp.split(' ')[0] == 'getf':
@@ -467,10 +470,9 @@ class GenericClient:
         print("           Bugs - +919497300461 - Samvram Sahu              \n")
         print("           Bugs - +919497300089 - Ankit Verma               \n")
         print("************************************************************\n")
-        #atexit.register(readline.write_history_file, histfile) # its time to delete 
-        #del os, histfile, readfile, rtlcompleter # separate hist for each run
-        
-        
+        # atexit.register(readline.write_history_file, histfile) # its time to delete
+        # del os, histfile, readfile, rtlcompleter # separate hist for each run
+
     def run_time(self):
         """
         A function depicting the runtime of the Client as a whole
@@ -495,8 +497,12 @@ class GenericClient:
 
         # Setting up transmit and receive sockets
         receive_socket = socket(AF_INET, SOCK_STREAM)
-        receive_socket.bind((self.client_ip, self.transmission_port))
-        print('$$ IP bound successfully\n')
+        try:
+            receive_socket.bind((self.client_ip, self.transmission_port))
+            print('$$ IP bound successfully\n')
+        except:
+            input("Can't bind to the Port %d.\nPress Enter to exit" % self.transmission_port)
+            return
 
         # Run a thread that looks for incoming connections and processes the commands that comes
         self.isrunning = True
@@ -515,7 +521,7 @@ class GenericClient:
         input("Press Enter to exit")
 
     def print_h(self, cmd, work):
-        print(cmd.rjust(30)+' - '+ work +'\n')
+        print(cmd.rjust(30) + ' - ' + work + '\n')
 
     def help(self):
         """
@@ -525,19 +531,27 @@ class GenericClient:
         print('Welcome to JAGGERY - HELP\n'.center(80))
         print('Arguements in <> are required and those in [] are optional\n'.center(80))
         print('\n')
-        print('At the beginning you will be asked to register once, with a given alias! Please provide a legit alias.'.center(80))
-        print('Also when someone requests a file your console asks you if you want to provide a file, press \'Y\' or '.center(80))
-        print('\'y\' to go to file selection mode. When receiving the file, a save file dialog box opens where you will'.center(80))
-        print('need to select the save directory and mandatorily fill the file name with extension, the dialog box title'.center(80))
+        print(
+            'At the beginning you will be asked to register once, with a given alias! Please provide a legit alias.'.center(
+                80))
+        print(
+            'Also when someone requests a file your console asks you if you want to provide a file, press \'Y\' or '.center(
+                80))
+        print(
+            '\'y\' to go to file selection mode. When receiving the file, a save file dialog box opens where you will'.center(
+                80))
+        print(
+            'need to select the save directory and mandatorily fill the file name with extension, the dialog box title'.center(
+                80))
         print('contains name of the file the other node has sent\n'.center(80))
         print('\n')
-        self.print_h('Command','Function')
-        self.print_h('isonline -ip <ip_address>','Tells if node having <ip_address> is online')
-        self.print_h('isonline -a <alias>','Tells if node having <alias> is online')
-        self.print_h('isonline -all','Tells us the list of all connected users')
+        self.print_h('Command', 'Function')
+        self.print_h('isonline -ip <ip_address>', 'Tells if node having <ip_address> is online')
+        self.print_h('isonline -a <alias>', 'Tells if node having <alias> is online')
+        self.print_h('isonline -all', 'Tells us the list of all connected users')
         self.print_h('getf <ip_address> [file_name]', 'Requests the node at <ip_address> for file:[file_name], '
                                                       'if no file_name is given it requests a file')
-        self.print_h('getf <alias> [file_name','Requests the node with <alias> for file:[file_name], '
-                                                      'if no file_name is given it requests a file')
-        self.print_h('alias <new_alias>','This asks the registry, to update your alias to <new_alias>')
-        self.print_h('exit','This command ends the execution of script on your machine, prompts for exit')
+        self.print_h('getf <alias> [file_name', 'Requests the node with <alias> for file:[file_name], '
+                                                'if no file_name is given it requests a file')
+        self.print_h('alias <new_alias>', 'This asks the registry, to update your alias to <new_alias>')
+        self.print_h('exit', 'This command ends the execution of script on your machine, prompts for exit')
