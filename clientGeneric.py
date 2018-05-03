@@ -2,7 +2,6 @@ import json
 import ntpath
 import threading
 import os
-
 import rlcompleter
 import atexit
 from socket import *
@@ -146,10 +145,6 @@ class GenericClient:
         :param command: The command queried
         :return:
         """
-        # query = dict( )
-        # query['command'] = command
-        # query['arguemets'] = arguements
-        # json_q = json.dumps(query)
         sock.send(command.encode())
         received_json = (sock.recv(self.BUFFERSIZE)).decode()
         return received_json
@@ -166,20 +161,22 @@ class GenericClient:
             try:
                 sock.listen(10)
                 connection, address = sock.accept()
-            except:
+            except timeout:
                 # print("$$ Timed out. Trying again")
                 continue
             else:
                 s = 'isonline -ip ' + str(address[0])
                 received_json = self.server_query(main_server_socket, s)
                 received_dict = json.loads(received_json)
+
+                k = ''
                 for k, v in received_dict.items():
                     print(Fore.WHITE + 'A connection has been requested to established to your node from "' + k + '"\n')
 
                 request = (connection.recv(self.BUFFERSIZE)).decode()
-
-                if request.split(':')[0] == 'fetch':
-                    file_path = request.split(':')[1]
+                request = request.split(':')
+                if request[0] == 'fetch':
+                    file_path = request[1]
                     self.getf_lock = True
                     root = Tk()
                     answer = messagebox.askyesno("Accept Connection", "Accept connection from '" + k + "' ?")
@@ -197,11 +194,7 @@ class GenericClient:
                                                                title='Request for %s' % file_path)
                     file_path = root.filename
                     root.destroy()
-                    # print('file_path'+str(file_path))
 
-                    # if file_path == ():
-                    #     print('You didnt not select any file, exiting command')
-                    #     connection.send('309'.encode())
                     self.getf_lock = False
                     if file_path != ():
                         head, tail = ntpath.split(file_path)
@@ -219,13 +212,12 @@ class GenericClient:
                                         bytes_sent = connection.send(bytes_to_send[bytes_sent:])
                                         is_sent_success = True
                                         total_bytes += bytes_sent
-                                    except:
+                                    except error:
                                         if total_bytes != len(bytes_to_send):
                                             print("Connection Forceibly closed by remote host, Please try again")
                                             is_sent_success = False
                                         self.getf_lock = False
                                         break
-                                # connection.settimeout(100)
                                 try:
                                     connection.recv(self.BUFFERSIZE).decode()
                                 except:
@@ -246,74 +238,6 @@ class GenericClient:
         sock.close()
         print("Stopped Listening")
 
-    def getf(self, sock, ip_alias, file_name, PORT=5000):
-        """
-        The function which gets a file from the other clients
-        :param ip_alias: The alias or ip on which to connect
-        :param file_name: the file to fetch
-        :param PORT: The port on which it should communicate
-        :return:
-        """
-        print('$$ Now connecting to IP : %s on Port : %s with Timeout of 5 sec\n' % (ip_alias, PORT))
-        sock.settimeout(5)
-        try:
-            sock.connect((ip_alias, PORT))
-        except:
-            print("Timeout. User might be offline")
-            return 0
-        print('$$ Connected\n')
-        sock.send(('fetch:%s' % file_name).encode())
-        print('$$ Requesting file. Timeout 60 sec\n')
-        sock.settimeout(60)
-        try:
-            reply = (sock.recv(self.BUFFERSIZE)).decode()
-        except:
-            print("Header got corrupted. Try Again")
-            reply = 'HC:'
-        reply = reply.split(':')
-        if reply[0] == 'yes':
-            file_size = int(reply[1])
-            received_file_name = reply[2]
-            print('Receiving FILE of Size ' + str(file_size) + '\n')
-            Ft = received_file_name.split('.')
-            lastFT = len(Ft) - 1
-            root1 = Tk()
-            root1.filename = filedialog.asksaveasfilename(initialdir=os.path.expanduser('~/Documents/'),
-                                                          initialfile=received_file_name,
-                                                          title='Save file as ', filetypes=(
-                (Ft[lastFT] + " files", "*." + Ft[lastFT]), ("all files", "*.*")))
-            file_path = root1.filename
-            root1.destroy()
-            try:
-                with open(file_path, 'wb') as f:
-                    data = sock.recv(self.BUFFERSIZE)
-                    total_received = len(data)
-                    f.write(data)
-                    while total_received < file_size:
-                        data = sock.recv(self.BUFFERSIZE)
-                        total_received += len(data)
-                        f.write(data)
-                        print("{0:.2f}".format((total_received / float(file_size)) * 100) + " % downloaded", end='\r')
-                    print("Download Completed\n")
-                    sock.send('done'.encode())
-                f.close()
-            except FileNotFoundError:
-                print("No file name given, exiting")
-                sock.close()
-                return
-            except ConnectionResetError:
-                print("Connection has been closed in between")
-                sock.close()
-                return
-        elif reply[0] == '308':
-            print('$$ Permission Denied\n')
-        elif reply[0] == '307':
-            print('$$ File Not Found\n')
-        else:
-            print('$$ Unknown Response from Client\n')
-        # Free the socket, i.e. disconnect it So it can be reused
-        sock.close()
-
     def console(self, main_server_socket):
         """
         The function which runs the console on the client machine
@@ -329,8 +253,7 @@ class GenericClient:
             histfile = os.path.join(os.environ['HOME'], '.pythonhistory')
             readline.read_history_file(histfile)
         except IOError:
-            print("$$ Can't read command histroy file")
-            # pass
+            print("$$ Can't read command history file")
 
         while True:
             if self.getf_lock is True:
@@ -406,7 +329,7 @@ class GenericClient:
 
     def handleGETF(self, inp, main_server_socket):
         if len(inp.split(' ')) is 1:
-            print('$$ Acceptable arguements with getf is <alias>/<IP> <File_name>(optional)\n')
+            print('$$ Acceptable arguments with getf is <alias>/<IP> <File_name>(optional)\n')
         else:
             d = inp.split(' ')[1]
             if d.count('.') >= 3:
@@ -428,16 +351,82 @@ class GenericClient:
                     return
                 ip_alias = v[0]
 
+            file_name = ''
             if len(inp.split(' ')) is 3:
-                # ip_alias = inp.split(' ')[1]
                 file_name = inp.split(' ')[2]
-                PORT = self.transmission_port
-                self.getf(socket(AF_INET, SOCK_STREAM), ip_alias, file_name, PORT)
             elif len(inp.split(' ')) is 2:
-                # ip_alias = inp.split(' ')[1]
                 file_name = 'unkonwn.file'
-                PORT = self.transmission_port
-                self.getf(socket(AF_INET, SOCK_STREAM), ip_alias, file_name, PORT)
+            PORT = self.transmission_port
+            self.getf(socket(AF_INET, SOCK_STREAM), ip_alias, file_name, PORT)
+
+    def getf(self, sock, ip_alias, file_name, PORT=5000):
+        """
+        The function which gets a file from the other clients
+        :param ip_alias: The alias or ip on which to connect
+        :param file_name: the file to fetch
+        :param PORT: The port on which it should communicate
+        :return:
+        """
+        print(
+            '$$ Connecting to IP : %s with Alias: %s on Port : %s with Timeout of 5 sec\n' % (ip_alias, ip_alias, PORT))
+        sock.settimeout(5)
+        try:
+            sock.connect((ip_alias, PORT))
+        except timeout:
+            print("Timeout. User might be offline")
+            return 0
+        print('$$ Connected\n')
+        sock.send(('fetch:%s' % file_name).encode())
+        print('$$ Requesting file. Timeout 60 sec\n')
+        sock.settimeout(60)
+        try:
+            reply = (sock.recv(self.BUFFERSIZE)).decode()
+        except:
+            print("Header got corrupted. Try Again")
+            reply = 'HC:'
+        reply = reply.split(':')
+        if reply[0] == 'yes':
+            file_size = int(reply[1])
+            received_file_name = reply[2]
+            print('Receiving FILE of Size ' + str(file_size) + '\n')
+            Ft = received_file_name.split('.')
+            lastFT = len(Ft) - 1
+            root1 = Tk()
+            root1.filename = filedialog.asksaveasfilename(initialdir=os.path.expanduser('~/Documents/'),
+                                                          initialfile=received_file_name,
+                                                          title='Save file as ', filetypes=(
+                    (Ft[lastFT] + " files", "*." + Ft[lastFT]), ("all files", "*.*")))
+            file_path = root1.filename
+            root1.destroy()
+            try:
+                with open(file_path, 'wb') as f:
+                    data = sock.recv(self.BUFFERSIZE)
+                    total_received = len(data)
+                    f.write(data)
+                    while total_received < file_size:
+                        data = sock.recv(self.BUFFERSIZE)
+                        total_received += len(data)
+                        f.write(data)
+                        print("{0:.2f}".format((total_received / float(file_size)) * 100) + " % downloaded", end='\r')
+                    print("Download Completed\n")
+                    sock.send('done'.encode())
+                f.close()
+            except FileNotFoundError:
+                print("No file name given, exiting")
+                sock.close()
+                return
+            except ConnectionResetError:
+                print("Connection has been closed in between")
+                sock.close()
+                return
+        elif reply[0] == '308':
+            print('$$ Permission Denied\n')
+        elif reply[0] == '307':
+            print('$$ File Not Found\n')
+        else:
+            print('$$ Unknown Response from Client\n')
+        # Free the socket, i.e. disconnect it So it can be reused
+        sock.close()
 
     def welcome(self):
         """
