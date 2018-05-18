@@ -620,3 +620,116 @@ ConnectionResetError: [WinError 10054] An existing connection was forcibly close
 2018-05-18 13:43:29 - 127.0.0.1_Thread - Server.handleISONLINE - INFO -> -ip requested: ['127.0.0.1']
 2018-05-18 13:43:29 - 127.0.0.1_Thread - Server.handleISONLINE - INFO -> Data sent
 2018-05-18 13:43:29 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Waiting for message from client
+2018-05-18 15:36:52 - MainThread - Server - INFO -> -----------------------------------
+2018-05-18 15:36:52 - MainThread - Server - INFO -> STARTING SERVER
+2018-05-18 15:36:52 - MainThread - Server.readConfig - INFO -> Reading Config file
+2018-05-18 15:36:52 - MainThread - Server.readConfig - INFO -> Config file has been successfully read
+2018-05-18 15:36:52 - MainThread - Server - INFO -> Initialization Over
+2018-05-18 15:36:52 - MainThread - Server.start - INFO -> Starting server at port 5000
+2018-05-18 15:36:52 - MainThread - Server.listen - INFO -> Listening for clients
+2018-05-18 15:37:09 - MainThread - Server.listen - INFO -> Connected to ('127.0.0.1', 50009)
+2018-05-18 15:37:09 - MainThread - Server.listen - INFO -> Listening for clients
+2018-05-18 15:37:09 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Fetching information of  ('127.0.0.1', 50009) having MAC: 192215766068467
+2018-05-18 15:37:09 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Alias ank has been sent
+2018-05-18 15:37:09 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Connected to Database to set status 1
+2018-05-18 15:37:09 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Status set to 1 and database disconnected
+2018-05-18 15:37:09 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Connected to Database to update IP address
+2018-05-18 15:37:09 - 127.0.0.1_Thread - Server.clientHandle - INFO -> IP address updated and database disconnected
+2018-05-18 15:37:09 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Waiting for message from client
+2018-05-18 15:37:13 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Client sent: b'isonline -a a'
+2018-05-18 15:37:13 - 127.0.0.1_Thread - Server.handleCommand - INFO -> Asked for isonline
+2018-05-18 15:37:13 - 127.0.0.1_Thread - Server.handleISONLINE - INFO -> -a requested: ['a']
+2018-05-18 15:37:13 - 127.0.0.1_Thread - Server.handleISONLINE - INFO -> Data sent
+2018-05-18 15:37:13 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Waiting for message from client
+2018-05-18 15:38:37 - 127.0.0.1_Thread - Server.clientHandle - ERROR -> Client Disconnected
+Traceback (most recent call last):
+  File "E:/Documents/Academics/VI_Sem/Soft computing/jab/server.py", line 157, in clientHandle
+    recData = conn.recv(self.BUFFERSIZE)
+ConnectionResetError: [WinError 10054] An existing connection was forcibly closed by the remote host
+2018-05-18 15:38:37 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Closing Connection
+2018-05-18 15:38:37 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Status set to 0
+2018-05-18 15:38:37 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Database closed
+2018-05-18 15:38:39 - MainThread - Server.listen - INFO -> Connected to ('127.0.0.1', 50012)
+2018-05-18 15:38:39 - MainThread - Server.listen - INFO -> Listening for clients
+2018-05-18 15:38:39 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Fetching information of  ('127.0.0.1', 50012) having MAC: 192215766068467
+2018-05-18 15:38:39 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Alias ank has been sent
+2018-05-18 15:38:39 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Connected to Database to set status 1
+2018-05-18 15:38:39 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Status set to 1 and database disconnected
+2018-05-18 15:38:39 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Connected to Database to update IP address
+2018-05-18 15:38:39 - 127.0.0.1_Thread - Server.clientHandle - INFO -> IP address updated and database disconnected
+2018-05-18 15:38:39 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Waiting for message from client
+2018-05-18 15:38:58 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Client sent: b'isonline -a a'
+2018-05-18 15:38:58 - 127.0.0.1_Thread - Server.handleCommand - INFO -> Asked for isonline
+2018-05-18 15:38:58 - 127.0.0.1_Thread - Server.handleISONLINE - INFO -> -a requested: ['a']
+2018-05-18 15:38:58 - 127.0.0.1_Thread - Server.handleISONLINE - INFO -> Data sent
+2018-05-18 15:38:58 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Waiting for message from client
+2018-05-18 15:39:06 - 127.0.0.1_Thread - Server.clientHandle - ERROR -> Client Disconnected
+Traceback (most recent call last):
+  File "E:/Documents/Academics/VI_Sem/Soft computing/jab/server.py", line 157, in clientHandle
+    recData = conn.recv(self.BUFFERSIZE)
+ConnectionResetError: [WinError 10054] An existing connection was forcibly closed by the remote host
+2018-05-18 15:39:06 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Closing Connection
+2018-05-18 15:39:06 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Status set to 0
+2018-05-18 15:39:06 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Database closed
+2018-05-18 15:39:52 - MainThread - Server.listen - INFO -> Connected to ('127.0.0.1', 50015)
+2018-05-18 15:39:52 - MainThread - Server.listen - INFO -> Listening for clients
+2018-05-18 15:39:52 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Fetching information of  ('127.0.0.1', 50015) having MAC: 192215766068467
+2018-05-18 15:39:52 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Alias ank has been sent
+2018-05-18 15:39:52 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Connected to Database to set status 1
+2018-05-18 15:39:52 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Status set to 1 and database disconnected
+2018-05-18 15:39:52 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Connected to Database to update IP address
+2018-05-18 15:39:52 - 127.0.0.1_Thread - Server.clientHandle - INFO -> IP address updated and database disconnected
+2018-05-18 15:39:52 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Waiting for message from client
+2018-05-18 15:39:55 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Client sent: b'isonline -a a'
+2018-05-18 15:39:55 - 127.0.0.1_Thread - Server.handleCommand - INFO -> Asked for isonline
+2018-05-18 15:39:55 - 127.0.0.1_Thread - Server.handleISONLINE - INFO -> -a requested: ['a']
+2018-05-18 15:39:55 - 127.0.0.1_Thread - Server.handleISONLINE - INFO -> Data sent
+2018-05-18 15:39:55 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Waiting for message from client
+2018-05-18 15:40:32 - 127.0.0.1_Thread - Server.clientHandle - ERROR -> Client Disconnected
+Traceback (most recent call last):
+  File "E:/Documents/Academics/VI_Sem/Soft computing/jab/server.py", line 157, in clientHandle
+    recData = conn.recv(self.BUFFERSIZE)
+ConnectionResetError: [WinError 10054] An existing connection was forcibly closed by the remote host
+2018-05-18 15:40:32 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Closing Connection
+2018-05-18 15:40:32 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Status set to 0
+2018-05-18 15:40:32 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Database closed
+2018-05-18 15:40:34 - MainThread - Server.listen - INFO -> Connected to ('127.0.0.1', 50018)
+2018-05-18 15:40:34 - MainThread - Server.listen - INFO -> Listening for clients
+2018-05-18 15:40:34 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Fetching information of  ('127.0.0.1', 50018) having MAC: 192215766068467
+2018-05-18 15:40:34 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Alias ank has been sent
+2018-05-18 15:40:34 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Connected to Database to set status 1
+2018-05-18 15:40:34 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Status set to 1 and database disconnected
+2018-05-18 15:40:34 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Connected to Database to update IP address
+2018-05-18 15:40:34 - 127.0.0.1_Thread - Server.clientHandle - INFO -> IP address updated and database disconnected
+2018-05-18 15:40:34 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Waiting for message from client
+2018-05-18 15:40:38 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Client sent: b'isonline -a a'
+2018-05-18 15:40:38 - 127.0.0.1_Thread - Server.handleCommand - INFO -> Asked for isonline
+2018-05-18 15:40:38 - 127.0.0.1_Thread - Server.handleISONLINE - INFO -> -a requested: ['a']
+2018-05-18 15:40:38 - 127.0.0.1_Thread - Server.handleISONLINE - INFO -> Data sent
+2018-05-18 15:40:38 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Waiting for message from client
+2018-05-18 15:44:56 - 127.0.0.1_Thread - Server.clientHandle - ERROR -> Client Disconnected
+Traceback (most recent call last):
+  File "E:/Documents/Academics/VI_Sem/Soft computing/jab/server.py", line 157, in clientHandle
+    recData = conn.recv(self.BUFFERSIZE)
+ConnectionResetError: [WinError 10054] An existing connection was forcibly closed by the remote host
+2018-05-18 15:44:56 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Closing Connection
+2018-05-18 15:44:56 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Status set to 0
+2018-05-18 15:44:56 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Database closed
+2018-05-18 15:44:58 - MainThread - Server.listen - INFO -> Connected to ('127.0.0.1', 50021)
+2018-05-18 15:44:58 - MainThread - Server.listen - INFO -> Listening for clients
+2018-05-18 15:44:58 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Fetching information of  ('127.0.0.1', 50021) having MAC: 192215766068467
+2018-05-18 15:44:58 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Alias ank has been sent
+2018-05-18 15:44:58 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Connected to Database to set status 1
+2018-05-18 15:44:58 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Status set to 1 and database disconnected
+2018-05-18 15:44:58 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Connected to Database to update IP address
+2018-05-18 15:44:58 - 127.0.0.1_Thread - Server.clientHandle - INFO -> IP address updated and database disconnected
+2018-05-18 15:44:58 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Waiting for message from client
+2018-05-18 15:45:03 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Client sent: b'isonline -a a'
+2018-05-18 15:45:03 - 127.0.0.1_Thread - Server.handleCommand - INFO -> Asked for isonline
+2018-05-18 15:45:03 - 127.0.0.1_Thread - Server.handleISONLINE - INFO -> -a requested: ['a']
+2018-05-18 15:45:03 - 127.0.0.1_Thread - Server.handleISONLINE - INFO -> Data sent
+2018-05-18 15:45:03 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Waiting for message from client
+2018-05-18 15:45:06 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Client sent: b''
+2018-05-18 15:45:06 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Closing Connection
+2018-05-18 15:45:06 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Status set to 0
+2018-05-18 15:45:06 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Database closed

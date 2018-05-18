@@ -3,7 +3,7 @@ from clientGeneric import GenericClient
 if __name__ == '__main__':
     d = dict()
     f = open("c.config", 'rb')
-    rq = ['Transmission_Port', 'Listen_Conn_No', 'Server_IP', 'Buffer_size'
+    rq = ['Transmission_Port', 'Listen_Conn_No', 'Server_IP', 'Buffer_size', 'Rec_thread_start',
           'Server_Port']  # list of all the configuration parameters to be present in s.config
     lines = f.readlines()
     for l in lines:
@@ -15,5 +15,5 @@ if __name__ == '__main__':
     print('Server IP : '+d['Server_IP']+'\n')
     print('Server Port : '+d['Server_Port']+'\n')
     sam = GenericClient(alias='new_user', serverIP=d['Server_IP'], serverPort=int(d['Server_Port']), transmissionPort=int(d['Transmission_Port']),
-                        buffer_size=int(d['Buffer_size']))
+                        buffer_size=int(d['Buffer_size']), rec_thread=int(d['Rec_thread_start']))
     sam.run_time()
