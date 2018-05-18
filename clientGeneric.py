@@ -4,6 +4,8 @@ import threading
 import os
 import rlcompleter
 import atexit
+import numpy as np
+import time
 from socket import *
 from tkinter import *
 from tkinter import filedialog
@@ -50,21 +52,26 @@ class GenericClient:
     then co-ordinates activities among other clients in order to transfer and receive files.
     """
 
-    def __init__(self, alias, serverIP='none', serverPort='none', transmissionPort='none', receptionPort='none'):
+    def __init__(self, alias, serverIP='none', serverPort='none', transmissionPort='none', receptionPort='none', buffer_size = 4096):
         """
         The constructor of the generic class which at the moment takes only the alias name on
         creation and sets it efficiently as a class property
         :param alias: the alias name by which you are recognized online on the server
         """
         init(convert=True)
-        s = socket(AF_INET, SOCK_DGRAM)
-        s.connect(("8.8.8.8", 80))
-        self.client_ip = s.getsockname()[0]
-        print('Your IP is :' + self.client_ip + '\n')
-        s.close()
+        try:
+            s = socket(AF_INET, SOCK_DGRAM)
+            s.connect(("8.8.8.8", 80))
+            self.client_ip = s.getsockname()[0]
+            print('Your IP is :' + self.client_ip + '\n')
+            s.close()
+        except OSError:
+            print("Can't get you IP address from DHCP using following address")
+            self.client_ip = gethostbyname('localhost')
+            print('Your IP is :' + self.client_ip + '\n')
         self.getf_lock = False
         self.alias = alias
-        self.BUFFERSIZE = 4096
+        self.BUFFERSIZE = buffer_size
         self.server_ip = serverIP
         self.server_port = serverPort
         self.transmission_port = transmissionPort
@@ -162,7 +169,6 @@ class GenericClient:
                 sock.listen(10)
                 connection, address = sock.accept()
             except timeout:
-                # print("$$ Timed out. Trying again")
                 continue
             else:
                 s = 'isonline -ip ' + str(address[0])
@@ -260,10 +266,7 @@ class GenericClient:
                 continue
             inp = input('$$ ').strip()
             if inp == 'exit':
-                print('$$ Now initiating END\n')
-                print('$$ 1 seconds to END\n')
-                self.isrunning = False
-                main_server_socket.close()
+                self.handleEXIT(main_server_socket)
                 break
             elif inp.split(' ')[0].lower() == 'help':
                 self.help()
@@ -277,6 +280,12 @@ class GenericClient:
                 print('$$ Invalid command! Try again\n')
         print("Console stopped")
         return
+
+    def handleEXIT(self, main_server_socket):
+        print('$$ Now initiating END\n')
+        print('$$ 1 seconds to END\n')
+        self.isrunning = False
+        main_server_socket.close()
 
     def handleISONLINE(self, inp, main_server_socket):
         try:
@@ -359,7 +368,7 @@ class GenericClient:
             PORT = self.transmission_port
             self.getf(socket(AF_INET, SOCK_STREAM), ip_alias, file_name, PORT)
 
-    def getf(self, sock, ip_alias, file_name, PORT=5000):
+    def getf(self, sock, ip_alias, file_name, PORT = 5000):
         """
         The function which gets a file from the other clients
         :param ip_alias: The alias or ip on which to connect
@@ -374,6 +383,9 @@ class GenericClient:
             sock.connect((ip_alias, PORT))
         except timeout:
             print("Timeout. User might be offline")
+            return 0
+        except OSError:
+            print("Unable to connet. User might be offline")
             return 0
         print('$$ Connected\n')
         sock.send(('fetch:%s' % file_name).encode())
@@ -399,17 +411,60 @@ class GenericClient:
             file_path = root1.filename
             root1.destroy()
             try:
+                data = bytearray()
+                written_size = 0
                 with open(file_path, 'wb') as f:
-                    data = sock.recv(self.BUFFERSIZE)
+                    data += (sock.recv(self.BUFFERSIZE))
                     total_received = len(data)
-                    f.write(data)
+
+                    tic = time.time()
+                    prev_rec_size = total_received
+                    data_rates = []
+                    inst_data_rate = 0
+                    strD = ' null'
                     while total_received < file_size:
-                        data = sock.recv(self.BUFFERSIZE)
-                        total_received += len(data)
-                        f.write(data)
-                        print("{0:.2f}".format((total_received / float(file_size)) * 100) + " % downloaded", end='\r')
-                    print("Download Completed\n")
+                        data += (sock.recv(self.BUFFERSIZE))
+                        total_received = written_size + len(data)
+                        if total_received % (1024*1024*512) == 0:
+                            f.write(bytes(data))
+                            written_size += len(data)
+                            del data
+                            data = bytearray()
+                        toc = time.time()
+                        if toc - tic > .1:
+                            inst_data_rate = float(total_received - prev_rec_size)/(toc - tic)
+                            data_rates.append(inst_data_rate)
+                            tic = toc
+                            prev_rec_size = total_received
+                            strD = ' Bps'
+                            if inst_data_rate > 1024:
+                                inst_data_rate /= 1024
+                                strD = ' KBps'
+                            if inst_data_rate > 1024:
+                                inst_data_rate /= 1024
+                                strD = ' MBps'
+                            if inst_data_rate > 1024:
+                                inst_data_rate /= 1024
+                                strD = ' GBps'
+                        if strD == ' null':
+                            print(
+                                "{0:.2f}".format((total_received / float(file_size)) * 100) + " % downloaded", end='\r')
+                        else:
+                            print("{0:.2f}".format((total_received / float(file_size)) * 100) +
+                                  " % downloaded at rate: ", "{0:.2f}".format(inst_data_rate), strD, end='\r')
+                    avg_data_rate = float(sum(data_rates))/len(data_rates)
+                    if avg_data_rate > 1024:
+                        avg_data_rate /= 1024
+                        strD = ' KBps'
+                    if avg_data_rate > 1024:
+                        avg_data_rate /= 1024
+                        strD = ' MBps'
+                    if avg_data_rate > 1024:
+                        avg_data_rate /= 1024
+                        strD = ' GBps'
+                    print("Download Completed at average rate of: ", "{0:.2f}".format(avg_data_rate), strD)
                     sock.send('done'.encode())
+                    f.write(bytes(data))
                 f.close()
             except FileNotFoundError:
                 print("No file name given, exiting")
@@ -467,16 +522,25 @@ class GenericClient:
         A function depicting the runtime of the Client as a whole
         :return: void
         """
+
         # Code for setting up a connection on server
         self.welcome()
         main_server_socket = socket(AF_INET, SOCK_STREAM)
-        main_server_socket.connect((self.server_ip, self.server_port))
+        try:
+            main_server_socket.connect((self.server_ip, self.server_port))
+        except OSError:
+            self.handleEXIT(main_server_socket)
+            self.aftermath()
+            print('Unable to connect to server')
+            input("Press Enter to exit")
+            return
+
         main_server_socket.send((json.dumps(self.mac_id)).encode())
         mac_id_reply = (main_server_socket.recv(self.BUFFERSIZE)).decode()
         if mac_id_reply == 'not_reg':
             while True:
                 self.alias = input('Pleas type in your new Alias: ')
-                main_server_socket.send(('alias %s' % (self.alias)).encode())
+                main_server_socket.send(('alias %s' % self.alias).encode())
                 alias_reply = json.loads(main_server_socket.recv(self.BUFFERSIZE).decode())
                 if alias_reply == 'success':
                     print('The alias name is successfully set to %s\n' % self.alias)
