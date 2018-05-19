@@ -197,9 +197,9 @@ class GenericClient:
                 c = threading.Thread(target=self.client_send_file_handle, args=(connection,))
                 c.start()
                 client_threads.append(c)
-        print('Waiting for client threads to complete')
+        print('Waiting for client threads to complete. Timeout 20 sec')
         for c in client_threads:
-            c.join()
+            c.join(20)
         sock.close()
         print("Stopped Listening")
 
@@ -471,11 +471,12 @@ class GenericClient:
                     (Ft[lastFT] + " files", "*." + Ft[lastFT]), ("all files", "*.*")))
             file_path = root1.filename
             root1.destroy()
-            if os.path.isfile(file_path):
-                try:
+            try:
+                with open(file_path, 'wb') as f:
+
                     File_rec_threads = []
                     chunks = int(file_size/self.Rec_thread_start)
-                    print('Chunks: ', chunks, 'Last chunk: ', file_size % chunks)
+                    # print('Chunks: ', chunks, 'Last chunk: ', file_size % chunks)
                     fsec_list = []
                     i = 0
                     while i < self.Rec_thread_start:
@@ -501,17 +502,16 @@ class GenericClient:
                         c.join()
                     sock.send('done'.encode())
                     print('Threads have been joined. Writing file to the disk')
-                    with open(file_path, 'wb') as f:
-                        for data in fsec_list:
-                            f.write(bytes(data))
-                        f.close()
-                        print('File writting to disk, Completed.')
-                except ConnectionResetError:
+                    for data in fsec_list:
+                        f.write(bytes(data))
+                    f.close()
+                    print('File writting to disk, Completed.\n$$ ')
+            except ConnectionResetError:
                     print("Connection has been closed in between")
                     sock.close()
                     return
-            else:
-                print("No file name given, exiting")
+            except FileNotFoundError:
+                print("No file name given, exiting\n$$ ")
                 sock.close()
                 return
         elif reply[0] == '308':
@@ -524,7 +524,7 @@ class GenericClient:
         sock.close()
 
     def receive_file_atomic_thread(self, sock, fsec_list, i, file_size):
-        print(i, ' Receiver atomic thread to receive: ', file_size)
+        # print(i, ' Receiver atomic thread to receive: ', file_size)
         temp = sock.recv(self.BUFFERSIZE)
         if len(temp) > file_size:
             print("Thread ",i," ALERT!!")
