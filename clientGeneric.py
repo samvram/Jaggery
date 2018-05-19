@@ -229,9 +229,12 @@ class GenericClient:
                     bytes_to_send_arr = bytearray(bytes_to_send)
                     reqs = int(request[2])
                     chunk_values = int(file_size / reqs)
-
                     index = list(range(0, file_size, chunk_values))
-                    index.append(file_size)
+                    if file_size % chunk_values == 0:
+                        index.append(file_size)
+                    else:
+                        index[-1] = index[-1] + file_size % chunk_values
+                    print(index)
                     file_socks = socket(AF_INET, SOCK_STREAM)
                     try:
                         file_socks.bind((self.client_ip, 6000))
@@ -468,46 +471,47 @@ class GenericClient:
                     (Ft[lastFT] + " files", "*." + Ft[lastFT]), ("all files", "*.*")))
             file_path = root1.filename
             root1.destroy()
-            try:
-                File_rec_threads = []
-                chunks = int(file_size/self.Rec_thread_start)
-                print('Chunks: ', chunks, 'Last chunk: ', file_size % chunks)
-                fsec_list = []
-                i = 0
-                while i < self.Rec_thread_start:
-                    s = socket(AF_INET, SOCK_STREAM)
-                    try:
-                        s.connect((ip, 6000))
-                        fsec_list.append(bytearray())
-                        if i == self.Rec_thread_start-1 and file_size % chunks != 0:
-                            c = threading.Thread(target=self.receive_file_atomic_thread,
-                                                 args=(s, fsec_list, i, file_size % chunks, ), name=str(i))
-                        else:
-                            c = threading.Thread(target=self.receive_file_atomic_thread, args=(s, fsec_list, i, chunks, ),
-                                             name=str(i))
-                        c.start()
-                        File_rec_threads.append(c)
-                        i += 1
-                    except:
-                        continue
-                    # print("Connected ", i)
-                # print('All sockets has been connected')
+            if os.path.isfile(file_path):
+                try:
+                    File_rec_threads = []
+                    chunks = int(file_size/self.Rec_thread_start)
+                    print('Chunks: ', chunks, 'Last chunk: ', file_size % chunks)
+                    fsec_list = []
+                    i = 0
+                    while i < self.Rec_thread_start:
+                        s = socket(AF_INET, SOCK_STREAM)
+                        try:
+                            s.connect((ip, 6000))
+                            fsec_list.append(bytearray())
+                            if i == self.Rec_thread_start-1 and file_size % chunks != 0:
+                                c = threading.Thread(target=self.receive_file_atomic_thread,
+                                                     args=(s, fsec_list, i, chunks + file_size % chunks, ), name=str(i))
+                            else:
+                                c = threading.Thread(target=self.receive_file_atomic_thread, args=(s, fsec_list, i, chunks, ),
+                                                 name=str(i))
+                            c.start()
+                            File_rec_threads.append(c)
+                            i += 1
+                        except:
+                            continue
+                        # print("Connected ", i)
+                    # print('All sockets has been connected')
 
-                for c in File_rec_threads:
-                    c.join()
-                sock.send('done'.encode())
-                print('Threads have been joined. Writing file to the disk')
-                with open(file_path, 'wb') as f:
-                    for data in fsec_list:
-                        f.write(bytes(data))
-                    f.close()
-                    print('File writting to disk, Completed.')
-            except FileNotFoundError:
+                    for c in File_rec_threads:
+                        c.join()
+                    sock.send('done'.encode())
+                    print('Threads have been joined. Writing file to the disk')
+                    with open(file_path, 'wb') as f:
+                        for data in fsec_list:
+                            f.write(bytes(data))
+                        f.close()
+                        print('File writting to disk, Completed.')
+                except ConnectionResetError:
+                    print("Connection has been closed in between")
+                    sock.close()
+                    return
+            else:
                 print("No file name given, exiting")
-                sock.close()
-                return
-            except ConnectionResetError:
-                print("Connection has been closed in between")
                 sock.close()
                 return
         elif reply[0] == '308':
@@ -522,9 +526,9 @@ class GenericClient:
     def receive_file_atomic_thread(self, sock, fsec_list, i, file_size):
         print(i, ' Receiver atomic thread to receive: ', file_size)
         temp = sock.recv(self.BUFFERSIZE)
-        if len(temp) != self.BUFFERSIZE:
+        if len(temp) > file_size:
             print("Thread ",i," ALERT!!")
-        fsec_list[i] += temp[: len(temp)]
+        fsec_list[i] += temp[: file_size]
 
         total_received = len(fsec_list[i])
         tic = time.time()
