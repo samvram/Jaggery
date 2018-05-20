@@ -159,7 +159,7 @@ class GenericClient:
         received_json = (sock.recv(self.BUFFERSIZE)).decode()
         return received_json
 
-    def send_file(self, main_server_socket, sock):
+    def listen_file_reqs(self, main_server_socket, sock):
         """
         The function handling reception
         :param sock: The socket which communicates and looks for reception
@@ -194,87 +194,98 @@ class GenericClient:
                     print("$$ ", end="")
                     continue
                 root.destroy()
-                c = threading.Thread(target=self.client_send_file_handle, args=(connection,))
-                c.start()
-                client_threads.append(c)
+
+                # connection has been accepted
+                request = (connection.recv(self.BUFFERSIZE)).decode()
+                request = request.split(':')
+                if request[0] == 'fetch':
+                    c = threading.Thread(target=self.client_send_file_fetch, args=(connection, request[1], request[2]))
+                    c.start()
+                    client_threads.append(c)
+                elif request[0] == 'push':
+                    print('File is requested to received')
+                    print('File name: ', request[1], ' size: ', request[2])
+                    self.receive_file_SENDF(connection, address[0], request[2], request[1])
+                else:
+                    connection.send('309'.encode())
+                    connection.close()
         print('Waiting for client threads to complete. Timeout 20 sec')
         for c in client_threads:
             c.join(20)
         sock.close()
         print("Stopped Listening")
 
-    def client_send_file_handle(self, connection):
-        request = (connection.recv(self.BUFFERSIZE)).decode()
-        request = request.split(':')
-        if request[0] == 'fetch':
-            file_path = request[1]
-            print("Number of receipt thread requested: ", request[2])
-            # self.getf_lock = True
-            root = Tk()
-            root.filename = filedialog.askopenfilename(initialdir=os.path.expanduser('~/Documents'),
-                                                       title='Request for %s' % file_path)
-            file_path = root.filename
-            root.destroy()
+    def client_send_file_fetch(self, connection, file_path, n_receipt_thread):
+        print("Number of receipt thread requested: ", n_receipt_thread)
+        # self.getf_lock = True
+        root = Tk()
+        root.filename = filedialog.askopenfilename(initialdir=os.path.expanduser('~/Documents'),
+                                                   title='Request for %s' % file_path)
+        file_path = root.filename
+        root.destroy()
 
-            self.getf_lock = False
-            if file_path != ():
-                head, tail = ntpath.split(file_path)
-                if os.path.isfile(file_path):
-                    file_size = os.path.getsize(file_path)
-                    connection.send(('yes:' + str(file_size) + ':' + tail).encode())
-                    # now we have sent the size of the file, we are ready to send the file
-                    with open(file_path, 'rb') as f:
-                        bytes_to_send = f.read()
-                        f.close()
-                    bytes_to_send_arr = bytearray(bytes_to_send)
-                    reqs = int(request[2])
-                    chunk_values = int(file_size / reqs)
-                    index = list(range(0, file_size, chunk_values))
-                    if file_size % chunk_values == 0:
-                        index.append(file_size)
-                    else:
-                        index[-1] = index[-1] + file_size % chunk_values
-                    print(index)
-                    file_socks = socket(AF_INET, SOCK_STREAM)
-                    try:
-                        file_socks.bind((self.client_ip, 6000))
-                        # print('$$ File socks IP bound successfully at port', 6000)
-                    except:
-                        input("Can't bind File socks to the Port %d.\nPress Enter to exit" % 6000)
-                        return
-                    file_socks.settimeout(5)
-                    i = 0
-                    file_threads = []
-                    while i < reqs:
-                        try:
-                            file_socks.listen(reqs)
-                            k, addr = file_socks.accept()
-                            i += 1
-                        except timeout:
-                            continue
-                        else:
-                            # print(i, 'Connections accepted')
-                            c = threading.Thread(target=self.send_file_atomic_thread,
-                                                 args=(k, bytes_to_send_arr[index[i-1]:index[i]], ))
-                            c.start()
-                            file_threads.append(c)
-                    file_socks.close()
-                    for c in file_threads:
-                        c.join()
-                    # print('File threads are joined')
-                    try:
-                        connection.recv(self.BUFFERSIZE).decode()
-                    except:
-                        print('Connection was forcfully closed from other end\n$$', end=' ')
-                    print('File Successfully sent\n$$ ')
-
+        self.getf_lock = False
+        if file_path != ():
+            head, tail = ntpath.split(file_path)
+            if os.path.isfile(file_path):
+                file_size = os.path.getsize(file_path)
+                connection.send(('yes:' + str(file_size) + ':' + tail).encode())
+                r = (connection.recv(self.BUFFERSIZE)).decode()
+                if r != 'send_file':
+                    print('Client not ready to receive the file\n$$ ')
+                    connection.close()
+                    return
+                # now we have sent the size of the file, we are ready to send the file
+                with open(file_path, 'rb') as f:
+                    bytes_to_send = f.read()
+                    f.close()
+                bytes_to_send_arr = bytearray(bytes_to_send)
+                reqs = int(n_receipt_thread)
+                chunk_values = int(file_size / reqs)
+                index = list(range(0, file_size, chunk_values))
+                if file_size % chunk_values == 0:
+                    index.append(file_size)
                 else:
-                    print('$$ File not Found on your machine\n$$ ')
-                    connection.send('307'.encode())
+                    index[-1] = index[-1] + file_size % chunk_values
+                # print(index)
+                file_socks = socket(AF_INET, SOCK_STREAM)
+                try:
+                    file_socks.bind((self.client_ip, 6000))
+                    # print('$$ File socks IP bound successfully at port', 6000)
+                except:
+                    input("Can't bind File socks to the Port %d.\nPress Enter to exit" % 6000)
+                    return
+                file_socks.settimeout(5)
+                i = 0
+                file_threads = []
+                while i < reqs:
+                    try:
+                        file_socks.listen(reqs)
+                        k, addr = file_socks.accept()
+                        i += 1
+                    except timeout:
+                        continue
+                    else:
+                        # print(i, 'Connections accepted')
+                        c = threading.Thread(target=self.send_file_atomic_thread,
+                                             args=(k, bytes_to_send_arr[index[i - 1]:index[i]],))
+                        c.start()
+                        file_threads.append(c)
+                file_socks.close()
+                for c in file_threads:
+                    c.join()
+                # print('File threads are joined')
+                try:
+                    connection.recv(self.BUFFERSIZE).decode()
+                except:
+                    print('Connection was forcfully closed from other end\n$$', end=' ')
+                print('File Successfully sent\n$$ ')
+
             else:
-                connection.send('308'.encode())
+                print('$$ File not Found on your machine\n$$ ')
+                connection.send('307'.encode())
         else:
-            connection.send('309'.encode())
+            connection.send('308'.encode())
         # self.getf_lock = False
         connection.close()
         print("Connection Stopped\n$$", end=' ')
@@ -329,6 +340,8 @@ class GenericClient:
                 self.handleGETF(inp, main_server_socket)
             elif inp.split(' ')[0] == 'alias':
                 self.handleALIAS(inp, main_server_socket)
+            elif inp.split(' ')[0] == 'sendf':
+                self.handleSENDF(inp, main_server_socket)
             elif inp != '':
                 print('$$ Invalid command! Try again\n')
         print("Console stopped")
@@ -423,12 +436,12 @@ class GenericClient:
                 file_name = 'unkonwn.file'
             PORT = self.transmission_port
             # self.getf(socket(AF_INET, SOCK_STREAM), ip_alias, file_name, PORT)
-            c = threading.Thread(target=self.receive_file,
+            c = threading.Thread(target=self.receive_file_GETF,
                                  args=(socket(AF_INET, SOCK_STREAM), ip_alias, file_name, PORT,))
             c.start()
             self.Rec_threads.append(c)
 
-    def receive_file(self, sock, ip, file_name, PORT=5865):
+    def receive_file_GETF(self, sock, ip, file_name, PORT=5865):
         """
         The function which gets a file from the other clients
         :param ip_alias: The alias or ip on which to connect
@@ -436,8 +449,7 @@ class GenericClient:
         :param PORT: The port on which it should communicate
         :return:
         """
-        print(
-            '$$ Connecting to IP : %s on Port : %s with Timeout of 5 sec\n' % (ip, PORT))
+        print('$$ Connecting to IP : %s on Port : %s with Timeout of 5 sec\n' % (ip, PORT))
         sock.settimeout(5)
         try:
             sock.connect((ip, PORT))
@@ -473,9 +485,9 @@ class GenericClient:
             root1.destroy()
             try:
                 with open(file_path, 'wb') as f:
-
+                    sock.send('send_file'.encode())
                     File_rec_threads = []
-                    chunks = int(file_size/self.Rec_thread_start)
+                    chunks = int(file_size / self.Rec_thread_start)
                     # print('Chunks: ', chunks, 'Last chunk: ', file_size % chunks)
                     fsec_list = []
                     i = 0
@@ -484,12 +496,14 @@ class GenericClient:
                         try:
                             s.connect((ip, 6000))
                             fsec_list.append(bytearray())
-                            if i == self.Rec_thread_start-1 and file_size % chunks != 0:
+                            if i == self.Rec_thread_start - 1 and file_size % chunks != 0:
                                 c = threading.Thread(target=self.receive_file_atomic_thread,
-                                                     args=(s, fsec_list, i, chunks + file_size % chunks, ), name=str(i))
+                                                     args=(s, fsec_list, i, chunks + file_size % chunks, chunks, f,),
+                                                     name=str(i))
                             else:
-                                c = threading.Thread(target=self.receive_file_atomic_thread, args=(s, fsec_list, i, chunks, ),
-                                                 name=str(i))
+                                c = threading.Thread(target=self.receive_file_atomic_thread,
+                                                     args=(s, fsec_list, i, chunks, chunks, f,),
+                                                     name=str(i))
                             c.start()
                             File_rec_threads.append(c)
                             i += 1
@@ -507,11 +521,12 @@ class GenericClient:
                     f.close()
                     print('File writting to disk, Completed.\n$$ ')
             except ConnectionResetError:
-                    print("Connection has been closed in between")
-                    sock.close()
-                    return
+                print("Connection has been closed in between")
+                sock.close()
+                return
             except FileNotFoundError:
                 print("No file name given, exiting\n$$ ")
+                sock.send('dont_send_file'.encode())
                 sock.close()
                 return
         elif reply[0] == '308':
@@ -523,12 +538,13 @@ class GenericClient:
         # Free the socket, i.e. disconnect it So it can be reused
         sock.close()
 
-    def receive_file_atomic_thread(self, sock, fsec_list, i, file_size):
+    def receive_file_atomic_thread(self, sock, fsec_list, i, file_size, chunks, file):
         # print(i, ' Receiver atomic thread to receive: ', file_size)
         temp = sock.recv(self.BUFFERSIZE)
         if len(temp) > file_size:
-            print("Thread ",i," ALERT!!")
-        fsec_list[i] += temp[: file_size]
+            fsec_list[i] += temp[: file_size]
+        else:
+            fsec_list[i] += temp
 
         total_received = len(fsec_list[i])
         tic = time.time()
@@ -557,9 +573,9 @@ class GenericClient:
                     strD = ' GBps'
                 if strD == ' null':
                     print("Thread ", i,
-                        "{0:.2f}".format((total_received / float(file_size)) * 100) + " % downloaded", end='\r')
+                          "{0:.2f}".format((total_received / float(file_size)) * 100) + " % downloaded", end='\r')
                 else:
-                    print("Thread ", i,"{0:.2f}".format((total_received / float(file_size)) * 100) +
+                    print("Thread ", i, "{0:.2f}".format((total_received / float(file_size)) * 100) +
                           " % downloaded at rate: ", "{0:.2f}".format(inst_data_rate), strD, end='\n')
         if len(data_rates) != 0:
             avg_data_rate = float(sum(data_rates)) / len(data_rates)
@@ -574,9 +590,175 @@ class GenericClient:
         if avg_data_rate > 1024:
             avg_data_rate /= 1024
             strD = ' GBps'
-        print("Thread ", i," ",total_received," Downloaded, Average rate of: ", "{0:.2f}".format(avg_data_rate), strD)
+        print("Thread ", i, " ", total_received, " Downloaded, Average rate of: ", "{0:.2f}".format(avg_data_rate),
+              strD)
         sock.close()
+        # # file.seek(i*chunks, 0)
+        # # print('Thread ', i, ' Writing at: ', file.tell(), ' of size: ', len(fsec_list[i]), ' next at: ', len(fsec_list[i]) + i*chunks)
+        # file.write(bytes(fsec_list[i]))
         return 0
+
+    def handleSENDF(self, inp, main_server_socket):
+        if len(inp.split(' ')) <= 2:
+            print('$$ Acceptable arguments with getf is <alias>/<IP> <File_name/File_path>\n')
+        else:
+            d = inp.split(' ')[1]
+            if d.count('.') >= 3:
+                s = 'isonline -ip ' + d
+                # print(s)
+            else:
+                s = 'isonline -a ' + d
+                # print(s)
+
+            ip_alias = ''
+            received_json = self.server_query(main_server_socket, s)
+            received_dict = json.loads(received_json)
+            for k, v in received_dict.items():
+                if v[0] == '0.0.0.0':
+                    print(k + "\tDoes not exist. Exiting command")
+                    return
+                if v[1] == 0:
+                    print(k + " is \tOFFLINE")
+                    return
+                ip_alias = v[0]
+            file_name = inp.split(' ')[2]
+            print('Sending file: ',file_name ,' to ', k, ' IP: ', ip_alias)
+            self.send_file_SENDF(socket(AF_INET, SOCK_STREAM), ip_alias, file_name, self.transmission_port)
+
+
+    def receive_file_SENDF(self, sock, ip, file_size, received_file_name):
+        file_size = int(file_size)
+        print('Receiving FILE of Size ' + str(file_size) + '\n')
+        Ft = received_file_name.split('.')
+        lastFT = len(Ft) - 1
+        root1 = Tk()
+        root1.filename = filedialog.asksaveasfilename(initialdir=os.path.expanduser('~/Documents/'),
+                                                      initialfile=received_file_name,
+                                                      title='Save file as ', filetypes=(
+                (Ft[lastFT] + " files", "*." + Ft[lastFT]), ("all files", "*.*")))
+        file_path = root1.filename
+        root1.destroy()
+        try:
+            with open(file_path, 'wb') as f:
+                sock.send(('send_file:%s'%self.Rec_thread_start).encode())
+                print('number sent')
+                File_rec_threads = []
+                chunks = int(file_size / self.Rec_thread_start)
+                # print('Chunks: ', chunks, 'Last chunk: ', file_size % chunks)
+                fsec_list = []
+                i = 0
+                while i < self.Rec_thread_start:
+                    s = socket(AF_INET, SOCK_STREAM)
+                    try:
+                        s.connect((ip, 6000))
+                        fsec_list.append(bytearray())
+                        if i == self.Rec_thread_start - 1 and file_size % chunks != 0:
+                            c = threading.Thread(target=self.receive_file_atomic_thread,
+                                                 args=(s, fsec_list, i, chunks + file_size % chunks, chunks, f,),
+                                                 name=str(i))
+                        else:
+                            c = threading.Thread(target=self.receive_file_atomic_thread,
+                                                 args=(s, fsec_list, i, chunks, chunks, f,),
+                                                 name=str(i))
+                        c.start()
+                        File_rec_threads.append(c)
+                        i += 1
+                    except:
+                        continue
+                    # print("Connected ", i)
+                # print('All sockets has been connected')
+
+                for c in File_rec_threads:
+                    c.join()
+                sock.send('done'.encode())
+                print('Threads have been joined. Writing file to the disk')
+                for data in fsec_list:
+                    f.write(bytes(data))
+                f.close()
+                print('File writting to disk, Completed.\n$$ ')
+        except ConnectionResetError:
+            print("Connection has been closed in between")
+            sock.close()
+            return
+        except FileNotFoundError:
+            print("No file name given, exiting\n$$ ")
+            sock.send(('dont_send_file:%s'%self.Rec_thread_start).encode())
+            sock.close()
+            return
+
+    def send_file_SENDF(self, sock, ip, file_path, PORT=5865):
+        print('$$ Connecting to IP : %s on Port : %s with Timeout of 5 sec\n' % (ip, PORT))
+        sock.settimeout(5)
+        try:
+            sock.connect((ip, PORT))
+        except timeout:
+            print("Timeout. User might be offline")
+            return 0
+        except ConnectionRefusedError:
+            print("Connection has been actively refused")
+            return 0
+        print('$$ Connected\n')
+        sock.settimeout(100)
+        try:
+            file_size = os.path.getsize(file_path)
+        except:
+            print('No file found')
+            return 0
+        sock.send(('push:%s:%s' % (file_path, file_size)).encode())
+        try:
+            r = sock.recv(self.BUFFERSIZE).decode()
+        except timeout:
+            print("Timeout. Haven't received any TCP connection number")
+        r = r.split(':')
+        if r[0] != 'send_file':
+            print('Client not ready to receive the file\n$$ ')
+            sock.close()
+            return
+        with open(file_path, 'rb') as f:
+            bytes_to_send = f.read()
+            f.close()
+        bytes_to_send_arr = bytearray(bytes_to_send)
+        del bytes_to_send
+        reqs = int(r[1])
+        chunk_values = int(file_size / reqs)
+        index = list(range(0, file_size, chunk_values))
+        if file_size % chunk_values == 0:
+            index.append(file_size)
+        else:
+            index[-1] = index[-1] + file_size % chunk_values
+        # print(index)
+        file_socks = socket(AF_INET, SOCK_STREAM)
+        try:
+            file_socks.bind((self.client_ip, 6000))
+            # print('$$ File socks IP bound successfully at port', 6000)
+        except:
+            input("Can't bind File socks to the Port %d.\nPress Enter to exit" % 6000)
+            return
+        file_socks.settimeout(5)
+        i = 0
+        file_threads = []
+        while i < reqs:
+            try:
+                file_socks.listen(reqs)
+                k, addr = file_socks.accept()
+                i += 1
+            except timeout:
+                continue
+            else:
+                # print(i, 'Connections accepted')
+                c = threading.Thread(target=self.send_file_atomic_thread,
+                                     args=(k, bytes_to_send_arr[index[i - 1]:index[i]],))
+                c.start()
+                file_threads.append(c)
+        file_socks.close()
+        for c in file_threads:
+            c.join()
+        # print('File threads are joined')
+        try:
+            sock.recv(self.BUFFERSIZE).decode()
+        except:
+            print('Connection was forcfully closed from other end\n$$', end=' ')
+        print('File Successfully sent\n$$ ')
 
     def welcome(self):
         """
@@ -654,7 +836,7 @@ class GenericClient:
 
         # Run a thread that looks for incoming connections and processes the commands that comes
         self.isrunning = True
-        receive_thread = threading.Thread(target=self.send_file, args=(main_server_socket, receive_socket,))
+        receive_thread = threading.Thread(target=self.listen_file_reqs, args=(main_server_socket, receive_socket,))
         receive_thread.start()
 
         # Running a Console on another thread
