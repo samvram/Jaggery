@@ -6,6 +6,7 @@ import rlcompleter
 import atexit
 import numpy as np
 import time
+from fileHandle import fileHandle
 from socket import *
 from tkinter import *
 from tkinter import filedialog
@@ -60,6 +61,7 @@ class GenericClient:
         :param alias: the alias name by which you are recognized online on the server
         """
         init(convert=True)
+        self.fileHandler = fileHandle()
         try:
             s = socket(AF_INET, SOCK_DGRAM)
             s.connect(("8.8.8.8", 80))
@@ -329,19 +331,22 @@ class GenericClient:
             if self.getf_lock is True:
                 continue
             inp = input('$$ ').strip()
+            cmd = inp.split(' ')[0]
             if inp == 'exit':
                 self.handleEXIT(main_server_socket)
                 break
-            elif inp.split(' ')[0].lower() == 'help':
+            elif cmd.lower() == 'help':
                 self.help()
-            elif inp.split(' ')[0] == 'isonline':
+            elif cmd == 'isonline':
                 self.handleISONLINE(inp, main_server_socket)
-            elif inp.split(' ')[0] == 'getf':
+            elif cmd == 'getf':
                 self.handleGETF(inp, main_server_socket)
-            elif inp.split(' ')[0] == 'alias':
+            elif cmd == 'alias':
                 self.handleALIAS(inp, main_server_socket)
-            elif inp.split(' ')[0] == 'sendf':
+            elif cmd == 'sendf':
                 self.handleSENDF(inp, main_server_socket)
+            elif cmd == 'addf' or cmd == 'showf':
+                self.fileHandler.handleCMD(inp, main_server_socket)
             elif inp != '':
                 print('$$ Invalid command! Try again\n')
         print("Console stopped")
@@ -498,11 +503,11 @@ class GenericClient:
                             fsec_list.append(bytearray())
                             if i == self.Rec_thread_start - 1 and file_size % chunks != 0:
                                 c = threading.Thread(target=self.receive_file_atomic_thread,
-                                                     args=(s, fsec_list, i, chunks + file_size % chunks, chunks, f,),
+                                                     args=(s, fsec_list, i, chunks + file_size % chunks,),
                                                      name=str(i))
                             else:
                                 c = threading.Thread(target=self.receive_file_atomic_thread,
-                                                     args=(s, fsec_list, i, chunks, chunks, f,),
+                                                     args=(s, fsec_list, i, chunks, ),
                                                      name=str(i))
                             c.start()
                             File_rec_threads.append(c)
@@ -538,7 +543,7 @@ class GenericClient:
         # Free the socket, i.e. disconnect it So it can be reused
         sock.close()
 
-    def receive_file_atomic_thread(self, sock, fsec_list, i, file_size, chunks, file):
+    def receive_file_atomic_thread(self, sock, fsec_list, i, file_size):
         # print(i, ' Receiver atomic thread to receive: ', file_size)
         temp = sock.recv(self.BUFFERSIZE)
         if len(temp) > file_size:
@@ -625,10 +630,14 @@ class GenericClient:
             print('Sending file: ',file_name ,' to ', k, ' IP: ', ip_alias)
             self.send_file_SENDF(socket(AF_INET, SOCK_STREAM), ip_alias, file_name, self.transmission_port)
 
-
     def receive_file_SENDF(self, sock, ip, file_size, received_file_name):
         file_size = int(file_size)
         print('Receiving FILE of Size ' + str(file_size) + '\n')
+        try:
+            temp = received_file_name.split('\\')
+            received_file_name = temp[len(temp)-1]
+        except:
+            print(end='')
         Ft = received_file_name.split('.')
         lastFT = len(Ft) - 1
         root1 = Tk()
@@ -654,11 +663,11 @@ class GenericClient:
                         fsec_list.append(bytearray())
                         if i == self.Rec_thread_start - 1 and file_size % chunks != 0:
                             c = threading.Thread(target=self.receive_file_atomic_thread,
-                                                 args=(s, fsec_list, i, chunks + file_size % chunks, chunks, f,),
+                                                 args=(s, fsec_list, i, chunks + file_size % chunks, ),
                                                  name=str(i))
                         else:
                             c = threading.Thread(target=self.receive_file_atomic_thread,
-                                                 args=(s, fsec_list, i, chunks, chunks, f,),
+                                                 args=(s, fsec_list, i, chunks, ),
                                                  name=str(i))
                         c.start()
                         File_rec_threads.append(c)
