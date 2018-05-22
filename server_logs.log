@@ -7425,3 +7425,26 @@ ConnectionResetError: [WinError 10054] An existing connection was forcibly close
 2018-05-21 22:23:39 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Closing Connection
 2018-05-21 22:23:39 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Status set to 0
 2018-05-21 22:23:39 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Database closed
+2018-05-22 10:12:08 - MainThread - Server.listen - INFO -> Connected to ('127.0.0.1', 50981)
+2018-05-22 10:12:08 - MainThread - Server.listen - INFO -> Listening for clients
+2018-05-22 10:12:08 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Fetching information of  ('127.0.0.1', 50981) having MAC: 115410744820470
+2018-05-22 10:12:08 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Alias avatar has been sent
+2018-05-22 10:12:08 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Connected to Database to set status 1
+2018-05-22 10:12:08 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Status set to 1 and database disconnected
+2018-05-22 10:12:08 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Connected to Database to update IP address
+2018-05-22 10:12:08 - 127.0.0.1_Thread - Server.clientHandle - INFO -> IP address updated and database disconnected
+2018-05-22 10:12:08 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Waiting for message from client
+2018-05-22 10:12:11 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Client sent: b'isonline -a Cunt'
+2018-05-22 10:12:11 - 127.0.0.1_Thread - Server.handleCommand - INFO -> Asked for isonline
+2018-05-22 10:12:11 - 127.0.0.1_Thread - Server.handleISONLINE - INFO -> -a requested: ['Cunt']
+2018-05-22 10:12:11 - 127.0.0.1_Thread - Server.handleISONLINE - INFO -> Data sent
+2018-05-22 10:12:11 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Waiting for message from client
+2018-05-22 10:12:11 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Client sent: b'isonline -ip 127.0.0.1'
+2018-05-22 10:12:11 - 127.0.0.1_Thread - Server.handleCommand - INFO -> Asked for isonline
+2018-05-22 10:12:11 - 127.0.0.1_Thread - Server.handleISONLINE - INFO -> -ip requested: ['127.0.0.1']
+2018-05-22 10:12:11 - 127.0.0.1_Thread - Server.handleISONLINE - INFO -> Data sent
+2018-05-22 10:12:11 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Waiting for message from client
+2018-05-22 10:12:14 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Client sent: b''
+2018-05-22 10:12:14 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Closing Connection
+2018-05-22 10:12:15 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Status set to 0
+2018-05-22 10:12:15 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Database closed

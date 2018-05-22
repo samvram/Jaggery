@@ -54,23 +54,24 @@ class fileHandle:
         except:
             return "illegalCMD"
         cmd = r[0]
-        opData = inp[inp.index(' ') + 1:]
-        if cmd == "addf":
-            self.__handleADDF__(opData.strip())
-        elif cmd == "getf":
-            self.__handleGETF__(opData.strip())
-        elif cmd == "rmf":
-            self.__handleRMF__(opData.strip())
-        elif cmd == "showf":
-            self.__handleSHOWF__(opData.strip())
-        else:
-            return "illegalCMD"
-
-    def __handleADDF__(self, opData):
+        opData = inp[inp.index(' ') + 1:].strip()
         try:
             r = opData.split(' ')
         except:
+            print('Illegal Command')
             return "illegalCMD"
+        if cmd == "addf":
+            self.__handleADDF__(r)
+        elif cmd == "getf":
+            self.__handleGETF__(r)
+        elif cmd == "rmf":
+            self.__handleRMF__(r)
+        elif cmd == "showf":
+            self.__handleSHOWF__(r)
+        else:
+            return "illegalCMD"
+
+    def __handleADDF__(self, r):
         option = r[0]
         if option == "-pub":
             q = """INSERT INTO pub (name, path, folder) VALUES (?, ?, ?)"""
@@ -113,14 +114,63 @@ class fileHandle:
     def __handleGETF__(self, opData):
         return 1
 
-    def __handleRMF__(self, opData):
-        return 1
+    def __handleRMF__(self, r):
+        option = r[0]
+        i = 1
+        if len(r) == 1:
+            if option == "-pub":
+                q = """DELETE FROM pub"""
+                strDisp = 'public '
+            elif option == "-pri":
+                q = """DELETE FROM pri"""
+                strDisp = 'private '
+            else:
+                print("Illegal Command")
+                return "illegalCMD"
+            dbConnection = sqlite3.connect(self.path)
+            db = dbConnection.cursor()
+            try:
+                db.execute(q)
+            except Exception as e:
+                print('Something went wrong while Deleting data from ', strDisp, "database\n", e)
+            else:
+                dbConnection.commit()
+                dbConnection.close()
+        else:
+            if option == "-pub":
+                q1 = """DELETE FROM pub WHERE path=?"""
+                q2 = """DELETE FROM pub WHERE name=?"""
+                q3 = """DELETE FROM pub WHERE folder=?"""
+                strDisp = 'public '
+            elif option == "-pri":
+                q1 = """DELETE FROM pri WHERE path=?"""
+                q2 = """DELETE FROM pri WHERE name=?"""
+                q3 = """DELETE FROM pri WHERE folder=?"""
+                strDisp = 'private '
+            else:
+                return "illegalCMD"
+            while i < len(r):
+                pS = r[i]
+                i += 1
+                if os.path.isdir(pS):
+                    fileList = os.listdir(pS)
+                    for k in fileList:
+                        r.append(os.path.abspath(pS) + "\\" + k)
+                    continue
+                dbConnection = sqlite3.connect(self.path)
+                db = dbConnection.cursor()
+                try:
+                    db.execute(q1, (pS,))
+                    (_, pS2) = os.path.split(pS)
+                    db.execute(q2, (pS2,))
+                    db.execute(q3, (pS,))
+                except Exception as e:
+                    print('Something went wrong while retrieving data from ', strDisp, "database\n", e)
+                else:
+                    dbConnection.commit()
+                    dbConnection.close()
 
-    def __handleSHOWF__(self, opData):
-        try:
-            r = opData.split(' ')
-        except:
-            return "illegalCMD"
+    def __handleSHOWF__(self, r):
         option = r[0]
         i = 1
         if len(r) == 1:
@@ -131,6 +181,7 @@ class fileHandle:
                 q = """SELECT * FROM pri"""
                 strDisp = 'private '
             else:
+                print("Illegal Command")
                 return "illegalCMD"
             dbConnection = sqlite3.connect(self.path)
             db = dbConnection.cursor()

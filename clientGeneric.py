@@ -319,7 +319,7 @@ class GenericClient:
         # tab completion
         readline.set_completer(completer.complete)
         readline.parse_and_bind('tab: complete')
-
+        fileCMDs = ['addf','showf', 'rmf']
         try:
             # history file
             histfile = os.path.join(os.environ['HOME'], '.pythonhistory')
@@ -345,7 +345,7 @@ class GenericClient:
                 self.handleALIAS(inp, main_server_socket)
             elif cmd == 'sendf':
                 self.handleSENDF(inp, main_server_socket)
-            elif cmd == 'addf' or cmd == 'showf':
+            elif cmd in fileCMDs:
                 self.fileHandler.handleCMD(inp, main_server_socket)
             elif inp != '':
                 print('$$ Invalid command! Try again\n')
