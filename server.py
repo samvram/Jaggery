@@ -101,53 +101,58 @@ class Server:
 
     def clientHandle(self, conn, addr):
         logger = logging.getLogger('Server.clientHandle')
-        recData = conn.recv(self.BUFFERSIZE).decode()
-        mac = json.loads(recData)
-
-        dbConnection = sqlite3.connect('netProj.db')
-        db = dbConnection.cursor()
-
-        logger.info('Fetching information of  '+str(addr)+' having MAC: ' + str(mac))
-        q = """SELECT * FROM onlines WHERE mac=?"""
-        db.execute(q, (mac,))
-
-        r = db.fetchall()
-
-        dbConnection.commit()
-        dbConnection.close()
-
-        if len(r) == 0:
-            conn.send("not_reg".encode())
-            logger.info('User '+str(addr)+' having MAC: '+str(mac)+' NOT registered')
+        try:
+            recData = conn.recv(self.BUFFERSIZE).decode()
+        except OSError:
+            logger.exception('OSERROR')
+            print("")
         else:
-            d = r[0]
-            d1 = json.dumps(d[0])
-            conn.send(d1.encode())
-            print("Alias sent")
-            logger.info('Alias %s has been sent' % d[0])
+            mac = json.loads(recData)
 
             dbConnection = sqlite3.connect('netProj.db')
             db = dbConnection.cursor()
 
-            logger.info('Connected to Database to set status 1')
-            q = """UPDATE onlines SET status=? WHERE mac=?"""
-            db.execute(q, (1, mac,))
+            logger.info('Fetching information of  '+str(addr)+' having MAC: ' + str(mac))
+            q = """SELECT * FROM onlines WHERE mac=?"""
+            db.execute(q, (mac,))
+
+            r = db.fetchall()
 
             dbConnection.commit()
             dbConnection.close()
 
-            dbConnection = sqlite3.connect('netProj.db')
-            db = dbConnection.cursor()
-            logger.info('Status set to 1 and database disconnected')
+            if len(r) == 0:
+                conn.send("not_reg".encode())
+                logger.info('User '+str(addr)+' having MAC: '+str(mac)+' NOT registered')
+            else:
+                d = r[0]
+                d1 = json.dumps(d[0])
+                conn.send(d1.encode())
+                print("Alias sent")
+                logger.info('Alias %s has been sent' % d[0])
 
-            logger.info('Connected to Database to update IP address')
-            q = """UPDATE onlines SET ip=? WHERE mac=?"""
-            db.execute(q, (addr[0], mac,))
+                dbConnection = sqlite3.connect('netProj.db')
+                db = dbConnection.cursor()
 
-            dbConnection.commit()
-            dbConnection.close()
-            logger.info('IP address updated and database disconnected')
-            print("Setting status to 1")
+                logger.info('Connected to Database to set status 1')
+                q = """UPDATE onlines SET status=? WHERE mac=?"""
+                db.execute(q, (1, mac,))
+
+                dbConnection.commit()
+                dbConnection.close()
+
+                dbConnection = sqlite3.connect('netProj.db')
+                db = dbConnection.cursor()
+                logger.info('Status set to 1 and database disconnected')
+
+                logger.info('Connected to Database to update IP address')
+                q = """UPDATE onlines SET ip=? WHERE mac=?"""
+                db.execute(q, (addr[0], mac,))
+
+                dbConnection.commit()
+                dbConnection.close()
+                logger.info('IP address updated and database disconnected')
+                print("Setting status to 1")
 
 
         while True:

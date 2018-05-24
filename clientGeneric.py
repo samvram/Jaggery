@@ -61,7 +61,7 @@ class GenericClient:
         :param alias: the alias name by which you are recognized online on the server
         """
         init(convert=True)
-        self.fileHandler = fileHandle()
+        self.welcome()
         try:
             s = socket(AF_INET, SOCK_DGRAM)
             s.connect(("8.8.8.8", 80))
@@ -315,11 +315,12 @@ class GenericClient:
         The function which runs the console on the client machine
         :return:
         """
-        completer = MyCompleter(["isonline", "isonline -all", "isonline -a", "isonline -ip", "getf", "alias", "exit"])
+        completer = MyCompleter(["isonline", "isonline -all", "isonline -a", "isonline -ip", "getf", "alias", "exit",
+                                 "addf -pub", "addf -pri", "getf -pri", "getf -pub", "rmf -pri", "rmf -pub"])
         # tab completion
         readline.set_completer(completer.complete)
         readline.parse_and_bind('tab: complete')
-        fileCMDs = ['addf','showf', 'rmf']
+        fileCMDs = ['addf', 'showf', 'rmf', 'searchf']
         try:
             # history file
             histfile = os.path.join(os.environ['HOME'], '.pythonhistory')
@@ -359,6 +360,10 @@ class GenericClient:
         print('$$ Now initiating END\n')
         print('$$ 1 seconds to END\n')
         self.isrunning = False
+        try:
+            self.fileHandler.closeAll()
+        except:
+            print('File Handler closed')
         main_server_socket.close()
 
     def handleISONLINE(self, inp, main_server_socket):
@@ -507,7 +512,7 @@ class GenericClient:
                                                      name=str(i))
                             else:
                                 c = threading.Thread(target=self.receive_file_atomic_thread,
-                                                     args=(s, fsec_list, i, chunks, ),
+                                                     args=(s, fsec_list, i, chunks,),
                                                      name=str(i))
                             c.start()
                             File_rec_threads.append(c)
@@ -627,7 +632,7 @@ class GenericClient:
                     return
                 ip_alias = v[0]
             file_name = inp.split(' ')[2]
-            print('Sending file: ',file_name ,' to ', k, ' IP: ', ip_alias)
+            print('Sending file: ', file_name, ' to ', k, ' IP: ', ip_alias)
             self.send_file_SENDF(socket(AF_INET, SOCK_STREAM), ip_alias, file_name, self.transmission_port)
 
     def receive_file_SENDF(self, sock, ip, file_size, received_file_name):
@@ -635,7 +640,7 @@ class GenericClient:
         print('Receiving FILE of Size ' + str(file_size) + '\n')
         try:
             temp = received_file_name.split('\\')
-            received_file_name = temp[len(temp)-1]
+            received_file_name = temp[len(temp) - 1]
         except:
             print(end='')
         Ft = received_file_name.split('.')
@@ -649,7 +654,7 @@ class GenericClient:
         root1.destroy()
         try:
             with open(file_path, 'wb') as f:
-                sock.send(('send_file:%s'%self.Rec_thread_start).encode())
+                sock.send(('send_file:%s' % self.Rec_thread_start).encode())
                 print('number sent')
                 File_rec_threads = []
                 chunks = int(file_size / self.Rec_thread_start)
@@ -663,11 +668,11 @@ class GenericClient:
                         fsec_list.append(bytearray())
                         if i == self.Rec_thread_start - 1 and file_size % chunks != 0:
                             c = threading.Thread(target=self.receive_file_atomic_thread,
-                                                 args=(s, fsec_list, i, chunks + file_size % chunks, ),
+                                                 args=(s, fsec_list, i, chunks + file_size % chunks,),
                                                  name=str(i))
                         else:
                             c = threading.Thread(target=self.receive_file_atomic_thread,
-                                                 args=(s, fsec_list, i, chunks, ),
+                                                 args=(s, fsec_list, i, chunks,),
                                                  name=str(i))
                         c.start()
                         File_rec_threads.append(c)
@@ -691,7 +696,7 @@ class GenericClient:
             return
         except FileNotFoundError:
             print("No file name given, exiting\n$$ ")
-            sock.send(('dont_send_file:%s'%self.Rec_thread_start).encode())
+            sock.send(('dont_send_file:%s' % self.Rec_thread_start).encode())
             sock.close()
             return
 
@@ -803,14 +808,12 @@ class GenericClient:
         # atexit.register(readline.write_history_file, histfile) # its time to delete
         # del os, histfile, readfile, rtlcompleter # separate hist for each run
 
-    def run_time(self):
+    def run_time(self, UDP_PORT, UDP_RESPONSE_TIME, UDP_RESPONSE_ATTEMPTS, UDP_RESPONSE_DELTA):
         """
         A function depicting the runtime of the Client as a whole
         :return: void
         """
-
         # Code for setting up a connection on server
-        self.welcome()
         main_server_socket = socket(AF_INET, SOCK_STREAM)
         try:
             main_server_socket.connect((self.server_ip, self.server_port))
@@ -833,14 +836,18 @@ class GenericClient:
                     break
         else:
             print('Welcome back %s\n' % mac_id_reply)
-
+            self.alias = mac_id_reply
+        self.fileHandler = fileHandle(UDP_PORT, self.BUFFERSIZE, self.client_ip, self.alias, self.mac_id,
+                                      UDP_RESPONSE_TIME=UDP_RESPONSE_TIME, UDP_RESPONSE_ATTEMPTS=UDP_RESPONSE_ATTEMPTS,
+                                      UDP_RESPONSE_DELTA=UDP_RESPONSE_DELTA)
         # Setting up transmit and receive sockets
         receive_socket = socket(AF_INET, SOCK_STREAM)
         try:
             receive_socket.bind((self.client_ip, self.transmission_port))
             print('$$ IP bound successfully at port', self.transmission_port)
         except:
-            input("Can't bind to the Port %d.\nPress Enter to exit" % self.transmission_port)
+            input("Can't bind to the Port %d." % self.transmission_port)
+            self.handleEXIT(main_server_socket)
             return
 
         # Run a thread that looks for incoming connections and processes the commands that comes
