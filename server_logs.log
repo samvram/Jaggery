@@ -1,0 +1,108 @@
+2018-04-08 19:23:04 - MainThread - Server - INFO -> STARTING SERVER
+2018-04-08 19:23:04 - MainThread - Server.readConfig - INFO -> Reading Config file
+2018-04-08 19:23:04 - MainThread - Server.readConfig - ERROR -> Config file has been successfully read
+2018-04-08 19:23:04 - MainThread - Server - INFO -> Initialization Over
+2018-04-08 19:23:05 - MainThread - Server.start - INFO -> Starting server at port 5000
+2018-04-08 19:23:05 - MainThread - Server.listen - INFO -> Listening for clients
+2018-04-08 19:24:31 - MainThread - Server - INFO -> STARTING SERVER
+2018-04-08 19:24:31 - MainThread - Server.readConfig - INFO -> Reading Config file
+2018-04-08 19:24:31 - MainThread - Server.readConfig - INFO -> Config file has been successfully read
+2018-04-08 19:24:31 - MainThread - Server - INFO -> Initialization Over
+2018-04-08 19:24:31 - MainThread - Server.start - INFO -> Starting server at port 5000
+2018-04-08 19:24:31 - MainThread - Server.listen - INFO -> Listening for clients
+2018-04-08 19:24:33 - MainThread - Server.listen - INFO -> Connected to ('127.0.0.1', 54994)
+2018-04-08 19:24:33 - MainThread - Server.listen - INFO -> Listening for clients
+2018-04-08 19:25:27 - MainThread - Server - INFO -> -----------------------------------
+2018-04-08 19:25:27 - MainThread - Server - INFO -> STARTING SERVER
+2018-04-08 19:25:27 - MainThread - Server.readConfig - INFO -> Reading Config file
+2018-04-08 19:25:27 - MainThread - Server.readConfig - INFO -> Config file has been successfully read
+2018-04-08 19:25:27 - MainThread - Server - INFO -> Initialization Over
+2018-04-08 19:25:27 - MainThread - Server.start - INFO -> Starting server at port 5000
+2018-04-08 19:25:27 - MainThread - Server.listen - INFO -> Listening for clients
+2018-04-08 19:31:23 - MainThread - Server - INFO -> -----------------------------------
+2018-04-08 19:31:23 - MainThread - Server - INFO -> STARTING SERVER
+2018-04-08 19:31:23 - MainThread - Server.readConfig - INFO -> Reading Config file
+2018-04-08 19:31:23 - MainThread - Server.readConfig - INFO -> Config file has been successfully read
+2018-04-08 19:31:23 - MainThread - Server - INFO -> Initialization Over
+2018-04-08 19:31:23 - MainThread - Server.start - INFO -> Starting server at port 5000
+2018-04-08 19:31:23 - MainThread - Server.listen - INFO -> Listening for clients
+2018-04-08 19:31:28 - MainThread - Server.listen - INFO -> Connected to ('127.0.0.1', 55050)
+2018-04-08 19:31:28 - MainThread - Server.listen - INFO -> Listening for clients
+2018-04-08 19:31:28 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Alias avatar has been sent
+2018-04-08 19:31:28 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Connected to Database to set status 1
+2018-04-08 19:31:28 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Status set to 1 and database disconnected
+2018-04-08 19:31:28 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Connected to Database to update IP address
+2018-04-08 19:31:28 - 127.0.0.1_Thread - Server.clientHandle - INFO -> IP address updated and database disconnected
+2018-04-08 19:31:28 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Waiting for message from ('127.0.0.1', 55050)
+2018-04-08 19:32:42 - MainThread - Server - INFO -> -----------------------------------
+2018-04-08 19:32:42 - MainThread - Server - INFO -> STARTING SERVER
+2018-04-08 19:32:42 - MainThread - Server.readConfig - INFO -> Reading Config file
+2018-04-08 19:32:42 - MainThread - Server.readConfig - INFO -> Config file has been successfully read
+2018-04-08 19:32:42 - MainThread - Server - INFO -> Initialization Over
+2018-04-08 19:32:42 - MainThread - Server.start - INFO -> Starting server at port 5000
+2018-04-08 19:32:42 - MainThread - Server.listen - INFO -> Listening for clients
+2018-04-08 19:32:45 - MainThread - Server.listen - INFO -> Connected to ('127.0.0.1', 55059)
+2018-04-08 19:32:45 - MainThread - Server.listen - INFO -> Listening for clients
+2018-04-08 19:34:18 - MainThread - Server - INFO -> -----------------------------------
+2018-04-08 19:34:18 - MainThread - Server - INFO -> STARTING SERVER
+2018-04-08 19:34:18 - MainThread - Server.readConfig - INFO -> Reading Config file
+2018-04-08 19:34:18 - MainThread - Server.readConfig - INFO -> Config file has been successfully read
+2018-04-08 19:34:18 - MainThread - Server - INFO -> Initialization Over
+2018-04-08 19:34:18 - MainThread - Server.start - INFO -> Starting server at port 5000
+2018-04-08 19:34:18 - MainThread - Server.listen - INFO -> Listening for clients
+2018-04-08 19:34:21 - MainThread - Server.listen - INFO -> Connected to ('127.0.0.1', 55113)
+2018-04-08 19:34:21 - MainThread - Server.listen - INFO -> Listening for clients
+2018-04-08 19:36:13 - MainThread - Server - INFO -> -----------------------------------
+2018-04-08 19:36:13 - MainThread - Server - INFO -> STARTING SERVER
+2018-04-08 19:36:13 - MainThread - Server.readConfig - INFO -> Reading Config file
+2018-04-08 19:36:13 - MainThread - Server.readConfig - INFO -> Config file has been successfully read
+2018-04-08 19:36:13 - MainThread - Server - INFO -> Initialization Over
+2018-04-08 19:36:13 - MainThread - Server.start - INFO -> Starting server at port 5000
+2018-04-08 19:36:13 - MainThread - Server.listen - INFO -> Listening for clients
+2018-04-08 19:36:15 - MainThread - Server.listen - INFO -> Connected to ('127.0.0.1', 55127)
+2018-04-08 19:36:15 - MainThread - Server.listen - INFO -> Listening for clients
+2018-04-08 19:36:15 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Fetching information of  ('127.0.0.1', 55127) having MAC: 115410744820470
+2018-04-08 19:36:15 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Alias avatar has been sent
+2018-04-08 19:36:15 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Connected to Database to set status 1
+2018-04-08 19:36:16 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Status set to 1 and database disconnected
+2018-04-08 19:36:16 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Connected to Database to update IP address
+2018-04-08 19:36:16 - 127.0.0.1_Thread - Server.clientHandle - INFO -> IP address updated and database disconnected
+2018-04-08 19:36:16 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Waiting for message from ('127.0.0.1', 55127)
+2018-04-08 19:40:45 - MainThread - Server - INFO -> -----------------------------------
+2018-04-08 19:40:45 - MainThread - Server - INFO -> STARTING SERVER
+2018-04-08 19:40:45 - MainThread - Server.readConfig - INFO -> Reading Config file
+2018-04-08 19:40:45 - MainThread - Server.readConfig - INFO -> Config file has been successfully read
+2018-04-08 19:40:45 - MainThread - Server - INFO -> Initialization Over
+2018-04-08 19:40:45 - MainThread - Server.start - INFO -> Starting server at port 5000
+2018-04-08 19:40:45 - MainThread - Server.listen - INFO -> Listening for clients
+2018-04-08 19:40:49 - MainThread - Server.listen - INFO -> Connected to ('127.0.0.1', 55203)
+2018-04-08 19:40:49 - MainThread - Server.listen - INFO -> Listening for clients
+2018-04-08 19:40:49 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Fetching information of  ('127.0.0.1', 55203) having MAC: 115410744820470
+2018-04-08 19:40:49 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Alias avatar has been sent
+2018-04-08 19:40:49 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Connected to Database to set status 1
+2018-04-08 19:40:49 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Status set to 1 and database disconnected
+2018-04-08 19:40:49 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Connected to Database to update IP address
+2018-04-08 19:40:49 - 127.0.0.1_Thread - Server.clientHandle - INFO -> IP address updated and database disconnected
+2018-04-08 19:40:49 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Waiting for message from client
+2018-04-08 19:40:55 - MainThread - Server - INFO -> -----------------------------------
+2018-04-08 19:40:55 - MainThread - Server - INFO -> STARTING SERVER
+2018-04-08 19:40:55 - MainThread - Server.readConfig - INFO -> Reading Config file
+2018-04-08 19:40:55 - MainThread - Server.readConfig - INFO -> Config file has been successfully read
+2018-04-08 19:40:55 - MainThread - Server - INFO -> Initialization Over
+2018-04-08 19:40:55 - MainThread - Server.start - INFO -> Starting server at port 5000
+2018-04-08 19:40:55 - MainThread - Server.listen - INFO -> Listening for clients
+2018-04-08 19:40:58 - MainThread - Server.listen - INFO -> Connected to ('127.0.0.1', 55206)
+2018-04-08 19:40:58 - MainThread - Server.listen - INFO -> Listening for clients
+2018-04-08 19:40:58 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Fetching information of  ('127.0.0.1', 55206) having MAC: 115410744820470
+2018-04-08 19:40:58 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Alias avatar has been sent
+2018-04-08 19:40:58 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Connected to Database to set status 1
+2018-04-08 19:40:58 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Status set to 1 and database disconnected
+2018-04-08 19:40:58 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Connected to Database to update IP address
+2018-04-08 19:40:58 - 127.0.0.1_Thread - Server.clientHandle - INFO -> IP address updated and database disconnected
+2018-04-08 19:40:58 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Waiting for message from client
+2018-04-08 19:41:00 - 127.0.0.1_Thread - Server.clientHandle - ERROR -> Client Disconnected
+Traceback (most recent call last):
+  File "E:/Documents/Academics/VI_Sem/Soft computing/jab/server.py", line 157, in clientHandle
+    recData = conn.recv(self.BUFFERSIZE)
+ConnectionResetError: [WinError 10054] An existing connection was forcibly closed by the remote host
+2018-04-08 19:41:00 - 127.0.0.1_Thread - Server.clientHandle - INFO -> Closing Connection
