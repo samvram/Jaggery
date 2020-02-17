@@ -16,13 +16,13 @@ try:
 except:
     pip.main(['install', 'colorama'])
     from colorama import init, Fore, Style
+    
 
 try:
     import readline
 except:
     pip.main(['install', 'pyreadline'])
     import readline
-
 
 class MyCompleter(object):  # custom autocompleter
     def __init__(self, options):
